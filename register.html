@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun - Kantinku</title>
+    
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Style Body khusus halaman Auth (sama persis dengan login.html) */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff5eb 0%, #ffffff 100%);
+        }
+        
+        /* Agar card tetap proporsional */
+        .auth-card { 
+            width: 100%; 
+            max-width: 450px; /* Sedikit lebih lebar dari login karena field lebih banyak */
+            text-align: center; 
+        }
+
+        /* Style Wrapper Password (Copy dari Login) */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: color 0.3s;
+            font-size: 1rem;
+            z-index: 10;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary);
+        }
+
+        /* Style pesan error kecil */
+        .error-text {
+            color: var(--danger);
+            font-size: 0.85rem;
+            text-align: left;
+            margin-top: -10px;
+            margin-bottom: 10px;
+            display: none; /* Sembunyi default */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card-glass auth-card">
+        <h1 style="font-size: 2rem; margin-bottom: 5px;">🍽️ Kantinku</h1>
+        <p class="mb-2" style="color: var(--text-muted);">Silakan isi data untuk membuat akun baru</p>
+
+        <form onsubmit="handleRegister(event)" style="margin-top: 2rem;">
+            
+            <div class="input-group">
+                <label>Nama Lengkap</label>
+                <input type="text" id="fullname" placeholder="Contoh: Budi Santoso" required>
+            </div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="nama@email.com" required>
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="Minimal 6 karakter" required minlength="6">
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePass('password', this)"></i>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Konfirmasi Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="confirmPassword" placeholder="Ulangi password di atas" required>
+                    <i class="fa-solid fa-eye toggle-password" onclick="togglePass('confirmPassword', this)"></i>
+                </div>
+            </div>
+            
+            <p id="errorMessage" class="error-text">Password tidak cocok!</p>
+            
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">Daftar Sekarang</button>
+        </form>
+
+        <p class="mt-2" style="font-size: 0.9rem;">
+            Sudah punya akun? <a href="login.html" style="color: var(--primary); font-weight: 600;">Masuk</a>
+        </p>
+    </div>
+
+    <script>
+        // --- 1. LOGIC SHOW/HIDE PASSWORD (REUSABLE) ---
+        // Fungsi ini bisa dipakai untuk kedua kolom password
+        function togglePass(inputId, iconElement) {
+            const input = document.getElementById(inputId);
+            
+            if (input.type === "password") {
+                input.type = "text";
+                iconElement.classList.remove('fa-eye');
+                iconElement.classList.add('fa-eye-slash');
+            } else {
+                input.type = "password";
+                iconElement.classList.remove('fa-eye-slash');
+                iconElement.classList.add('fa-eye');
+            }
+        }
+
+        // --- 2. LOGIC REGISTER & VALIDASI ---
+        async function handleRegister(e) {
+            e.preventDefault();
+            
+            // Ambil value
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorMsg = document.getElementById('errorMessage');
+
+            // Reset Error
+            errorMsg.style.display = 'none';
+
+            // Validasi: Cek apakah password sama
+            if (password !== confirmPassword) {
+                errorMsg.innerText = "❌ Password dan Konfirmasi Password tidak sama!";
+                errorMsg.style.display = 'block';
+                return; // Stop proses
+            }
+
+            // --- SIMULASI SUKSES ---
+            // Di sini nanti kita fetch ke Backend Auth Service
+            console.log("Mendaftar:", { fullname, email, password });
+
+            alert("✅ Registrasi Berhasil! Silakan login.");
+            window.location.href = "login.html"; // Kembali ke login
+        }
+    </script>
+</body>
+</html>

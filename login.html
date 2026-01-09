@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - Kantinku</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff5eb 0%, #ffffff 100%);
+        }
+        .auth-card { width: 100%; max-width: 400px; text-align: center; }
+
+        /* --- STYLE KHUSUS PASSWORD TOGGLE --- */
+        .password-wrapper {
+            position: relative; /* Agar ikon bisa diatur posisinya relatif terhadap kotak ini */
+            width: 100%;
+        }
+
+        .password-wrapper input {
+            padding-right: 45px; /* Beri jarak di kanan agar teks tidak menabrak ikon */
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;      /* Jarak dari kanan */
+            top: 50%;         /* Tengah vertikal */
+            transform: translateY(-50%); /* Koreksi posisi tengah presisi */
+            cursor: pointer;
+            color: var(--text-muted); /* Warna abu-abu (default) */
+            transition: color 0.3s;
+            font-size: 1rem;
+            z-index: 10;
+        }
+
+        .toggle-password:hover {
+            color: var(--primary); /* Berubah orange saat di-hover (Tema Kantinku) */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card-glass auth-card">
+        <h1 style="font-size: 2rem; margin-bottom: 5px;">🍽️ Kantinku</h1>
+        <p class="mb-2" style="color: var(--text-muted);">Masuk untuk mulai memesan</p>
+
+        <form onsubmit="handleLogin(event)" style="margin-top: 2rem;">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="email" placeholder="contoh: user@gmail.com" required>
+            </div>
+            
+            <div class="input-group">
+                <label>Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePasswordVisibility()"></i>
+                </div>
+            </div>
+            
+            <button type="submit" class="btn-primary">Masuk Sekarang</button>
+        </form>
+
+        <p class="mt-2" style="font-size: 0.9rem;">
+         Belum punya akun? <a href="register.html" style="color: var(--primary); font-weight: 600;">Daftar disini</a>
+        </p>
+    </div>
+
+    <script>
+        // 3. LOGIC JAVASCRIPT TOGGLE
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
+
+            // Cek tipe saat ini
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text"; // Tampilkan password
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash'); // Ganti ikon jadi mata dicoret
+            } else {
+                passwordInput.type = "password"; // Sembunyikan password
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye'); // Ganti ikon jadi mata biasa
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // --- LOGIC LOGIN SEMENTARA ---
+            console.log("Login:", email);
+
+            if(email.includes("admin")) {
+                alert("Login Berhasil sebagai Admin!");
+                window.location.href = "admin.html";
+            } else {
+                alert("Login Berhasil! Selamat datang.");
+                window.location.href = "index.html";
+            }
+        }
+    </script>
+</body>
+</html>

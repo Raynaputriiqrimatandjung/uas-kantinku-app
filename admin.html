@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - Kantinku</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-layout { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; background: white; padding: 2rem; border-right: 1px solid #eee; }
+        .main-content { flex: 1; padding: 2rem; }
+        
+        .menu-item { display: block; padding: 10px; color: var(--text-muted); text-decoration: none; margin-bottom: 5px; border-radius: 8px; }
+        .menu-item.active { background: #fff5eb; color: var(--primary); font-weight: 600; }
+        
+        .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .table-container { background: white; border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-soft); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th { text-align: left; color: var(--text-muted); padding: 1rem; border-bottom: 2px solid #eee; }
+        td { padding: 1rem; border-bottom: 1px solid #eee; }
+        
+        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-success { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-layout">
+        <aside class="sidebar">
+            <h3 style="color: var(--primary); margin-bottom: 2rem;">👑 Admin Panel</h3>
+            <nav>
+                <a href="#" class="menu-item active">📊 Dashboard</a>
+                <a href="#" class="menu-item">🍔 Manajemen Menu</a>
+                <a href="#" class="menu-item">📝 Riwayat Pesanan</a>
+                <a href="#" class="menu-item">⚙️ Pengaturan Toko</a>
+                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+                <a href="#" onclick="logout()" class="menu-item" style="color: var(--danger);">🚪 Logout</a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Ringkasan Toko</h2>
+                <div class="card-glass" style="padding: 0.5rem 1rem; display: flex; gap: 10px; align-items: center;">
+                    <span>🔔 Notifikasi</span>
+                    <span style="background: var(--danger); color: white; padding: 2px 6px; border-radius: 50%; font-size: 0.8rem;">3</span>
+                </div>
+            </div>
+
+            <div class="stat-cards">
+                <div class="card-glass" style="padding: 1.5rem;">
+                    <p style="color: var(--text-muted);">Total Pendapatan</p>
+                    <h3 style="font-size: 1.8rem;">Rp 1.250.000</h3>
+                </div>
+                <div class="card-glass" style="padding: 1.5rem;">
+                    <p style="color: var(--text-muted);">Pesanan Masuk</p>
+                    <h3 style="font-size: 1.8rem;">12</h3>
+                </div>
+                <div class="card-glass" style="padding: 1.5rem;">
+                    <p style="color: var(--text-muted);">Total Menu</p>
+                    <h3 style="font-size: 1.8rem;">8</h3>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h3>Pesanan Terbaru</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Pelanggan</th>
+                            <th>Menu</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTable">
+                        <tr>
+                            <td>#ORD-001</td>
+                            <td>Budi Santoso</td>
+                            <td>Burger x2</td>
+                            <td>Rp 30.000</td>
+                            <td><span class="status-badge status-pending">Pending</span></td>
+                            <td><button style="border:none; background:none; color:var(--primary); cursor:pointer;">Detail</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Masukkan script POLLING notifikasi di sini (seperti jawaban sebelumnya)
+        // Dan fetch data pesanan dari Order Service (Port 3003)
+    </script>
+</body>
+</html>
