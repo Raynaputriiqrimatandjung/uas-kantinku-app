@@ -4,134 +4,205 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Masuk - Kantinku</title>
-    <link rel="stylesheet" href="style.css"> 
-    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <style>
+        * { box-sizing: border-box; }
+
         body {
+            font-family: 'Poppins', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background: linear-gradient(135deg, #fff5eb 0%, #ffffff 100%);
             margin: 0;
-            font-family: sans-serif;
+            background-color: #fcfcfc;
         }
-        .auth-card { width: 100%; max-width: 400px; text-align: center; }
 
-        /* --- STYLE KHUSUS PASSWORD TOGGLE --- */
+        .login-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff8c00;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #333;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            border-color: #ff8c00;
+        }
+
+        input::placeholder { color: #aaa; }
+
+        /* --- TAMBAHAN KHUSUS UNTUK IKON MATA --- */
         .password-wrapper {
-            position: relative;
+            position: relative; /* Agar ikon bisa menempel di dalam input */
             width: 100%;
         }
-
+        
         .password-wrapper input {
-            padding-right: 45px;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        /* Style tambahan untuk input biasa agar seragam */
-        .input-group input[type="email"] {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            margin-bottom: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
+            padding-right: 45px; /* Beri jarak kanan agar teks tidak tertutup ikon */
         }
 
         .toggle-password {
             position: absolute;
             right: 15px;
-            top: 40%; /* Disesuaikan sedikit agar pas tengah */
+            top: 50%;
             transform: translateY(-50%);
             cursor: pointer;
-            color: #888;
+            color: #aaa; /* Warna abu-abu soft */
             transition: color 0.3s;
             font-size: 1rem;
-            z-index: 10;
         }
 
         .toggle-password:hover {
+            color: #ff8c00; /* Berubah oranye saat diarahkan mouse */
+        }
+        /* --------------------------------------- */
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 25px;
+        }
+
+        .forgot-password a {
             color: #ff8c00;
+            font-size: 13px;
+            text-decoration: none;
         }
 
         .btn-primary {
             width: 100%;
-            padding: 10px;
+            padding: 15px;
             background-color: #ff8c00;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
             cursor: pointer;
-            font-weight: bold;
-            font-size: 1rem;
+            transition: background 0.3s;
         }
-        
+
         .btn-primary:hover {
             background-color: #e67e00;
         }
-        
-        .card-glass {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 2rem;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+
+        .footer-link {
+            margin-top: 25px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .footer-link a {
+            color: #ff8c00;
+            font-weight: 600;
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
 
-    <div class="card-glass auth-card">
-        <h1 style="font-size: 2rem; margin-bottom: 5px; margin-top: 0;">🍽️ Kantinku</h1>
-        <p class="mb-2" style="color: #666;">Masuk untuk mulai memesan</p>
+    <div class="login-card">
+        <div class="logo">🍽️ Kantinku</div>
 
-        <form onsubmit="handleLogin(event)" style="margin-top: 2rem;">
-            <div class="input-group" style="text-align: left;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Email</label>
-                <input type="email" id="email" placeholder="contoh: user@gmail.com" required>
+        <h1>Selamat Datang Kembali</h1>
+        <p class="subtitle">Silakan masukkan akun Anda untuk<br>memesan.</p>
+
+        <form onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" id="email" placeholder="nama@email.com" required>
             </div>
             
-            <div class="input-group" style="text-align: left;">
-                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Password</label>
+            <div class="form-group">
+                <label>Password</label>
                 <div class="password-wrapper">
-                    <input type="password" id="password" placeholder="••••••••" required>
+                    <input type="password" id="password" placeholder="........" required>
                     <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePasswordVisibility()"></i>
                 </div>
             </div>
+
+            <div class="forgot-password">
+                <a href="#">Lupa Password?</a>
+            </div>
             
-            <button type="submit" class="btn-primary" style="margin-top: 10px;">Masuk Sekarang</button>
+            <button type="submit" class="btn-primary">Masuk Sekarang</button>
         </form>
 
-        <p class="mt-2" style="font-size: 0.9rem; margin-top: 15px;">
-           Belum punya akun? <a href="register.html" style="color: #ff8c00; font-weight: 600; text-decoration: none;">Daftar disini</a>
-        </p>
+        <div class="footer-link">
+            Belum punya akun? <a href="register.html">Daftar</a>
+        </div>
     </div>
 
     <script>
-        // 1. LOGIC JAVASCRIPT TOGGLE
+        // 1. Logic untuk Tombol Mata (Show/Hide Password)
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
             const icon = document.getElementById('toggleIcon');
 
             if (passwordInput.type === "password") {
-                passwordInput.type = "text";
+                passwordInput.type = "text"; // Munculkan text
                 icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
+                icon.classList.add('fa-eye-slash'); // Ganti ikon jadi mata dicoret
             } else {
-                passwordInput.type = "password";
+                passwordInput.type = "password"; // Sembunyikan text
                 icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
+                icon.classList.add('fa-eye'); // Ganti ikon jadi mata biasa
             }
         }
 
-        // 2. LOGIC LOGIN (PERBAIKAN UTAMA DISINI)
+        // 2. Logic Login
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -143,10 +214,6 @@
                 window.location.href = "admin.html";
             } else {
                 alert("Login Berhasil! Selamat datang.");
-                
-                // --- PERBAIKAN PENTING ---
-                // Dulu: index.html (salah, karena akan balik ke login lagi)
-                // Sekarang: menu.html (benar, masuk ke dashboard menu)
                 window.location.href = "menu.html"; 
             }
         }
