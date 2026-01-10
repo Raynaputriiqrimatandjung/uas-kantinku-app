@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
+        /* --- CSS DESIGN (TIDAK ADA PERUBAHAN) --- */
         * { box-sizing: border-box; }
 
         body {
@@ -17,7 +18,7 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #fcfcfc; /* Background sama dengan Login */
+            background-color: #fcfcfc;
         }
 
         .register-card {
@@ -26,7 +27,7 @@
             border-radius: 20px;
             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             width: 100%;
-            max-width: 450px; /* Lebar sama dengan Login */
+            max-width: 450px;
             text-align: center;
         }
 
@@ -57,7 +58,7 @@
 
         .form-group {
             text-align: left;
-            margin-bottom: 15px; /* Jarak antar input sedikit lebih rapat agar muat */
+            margin-bottom: 15px;
         }
 
         label {
@@ -84,7 +85,6 @@
 
         input::placeholder { color: #aaa; }
 
-        /* --- WRAPPER UNTUK IKON MATA --- */
         .password-wrapper {
             position: relative;
             width: 100%;
@@ -127,6 +127,11 @@
             background-color: #e67e00;
         }
 
+        .btn-primary:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
         .footer-link {
             margin-top: 25px;
             font-size: 14px;
@@ -148,7 +153,7 @@
         <h1>Buat Akun Baru</h1>
         <p class="subtitle">Isi data diri Anda dengan lengkap<br>untuk mulai memesan.</p>
 
-        <form onsubmit="handleRegister(event)">
+        <form id="registerForm" onsubmit="handleRegister(event)">
             <div class="form-group">
                 <label>Nama Lengkap</label>
                 <input type="text" id="fullname" placeholder="Contoh: Budi Santoso" required>
@@ -175,7 +180,7 @@
                 </div>
             </div>
             
-            <button type="submit" class="btn-primary">Daftar Sekarang</button>
+            <button type="submit" class="btn-primary" id="btnSubmit">Daftar Sekarang</button>
         </form>
 
         <div class="footer-link">
@@ -184,6 +189,13 @@
     </div>
 
     <script>
+        // KONFIGURASI URL BACKEND
+        // Jika pakai Localhost (Jalankan server.js di port 3000):
+        const BACKEND_URL = 'http://localhost:3000/api'; 
+        
+        // Jika Backend kamu ada di Vercel, ganti baris di atas dengan:
+        // const BACKEND_URL = 'https://uas-menu-service.vercel.app/api';
+
         // 1. Toggle Mata untuk Password Pertama
         function togglePass1() {
             const input = document.getElementById('password');
@@ -214,21 +226,58 @@
             }
         }
 
-        // 3. Logic Register Sederhana
-        function handleRegister(e) {
+        // 3. Logic Register (Async/Await Fixed)
+        async function handleRegister(e) {
             e.preventDefault();
-            const pass1 = document.getElementById('password').value;
-            const pass2 = document.getElementById('confirmPassword').value;
 
-            // Validasi sederhana: Password harus sama
-            if (pass1 !== pass2) {
+            const fullname = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const btn = document.getElementById('btnSubmit');
+
+            // Validasi Password
+            if (password !== confirmPassword) {
                 alert("Password dan Konfirmasi Password tidak sama!");
                 return;
             }
 
-            alert("Pendaftaran Berhasil! Silakan Login.");
-            // Setelah daftar, arahkan user ke halaman Login (index.html)
-            window.location.href = "index.html";
+            // Simpan teks asli tombol
+            const originalText = btn.innerText;
+            btn.innerText = "Memproses...";
+            btn.disabled = true;
+
+            try {
+                // Kirim request ke backend
+                const response = await fetch(`${BACKEND_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: fullname,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert("Pendaftaran Berhasil! Silakan Login.");
+                    window.location.href = "index.html";
+                } else {
+                    alert(result.message || "Gagal mendaftar. Cek kembali data Anda.");
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Gagal terhubung ke server. Pastikan backend menyala!");
+            } finally {
+                // Kembalikan tombol ke kondisi semula
+                btn.innerText = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>

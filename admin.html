@@ -3,8 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <title>Admin Dashboard - Kantinku</title>
-    <link rel="stylesheet" href="style.css">
     <style>
+        :root {
+            --primary: #ff8c42;
+            --bg-light: #f9f9f9;
+            --text-muted: #636e72;
+            --danger: #ff4757;
+            --radius-md: 10px;
+            --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-light); }
         .admin-layout { display: flex; min-height: 100vh; }
         .sidebar { width: 250px; background: white; padding: 2rem; border-right: 1px solid #eee; }
         .main-content { flex: 1; padding: 2rem; }
@@ -13,6 +21,7 @@
         .menu-item.active { background: #fff5eb; color: var(--primary); font-weight: 600; }
         
         .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
+        .card-glass { background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
         .table-container { background: white; border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-soft); }
         
         table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
@@ -55,11 +64,11 @@
                 </div>
                 <div class="card-glass" style="padding: 1.5rem;">
                     <p style="color: var(--text-muted);">Pesanan Masuk</p>
-                    <h3 style="font-size: 1.8rem;">12</h3>
+                    <h3 style="font-size: 1.8rem;" id="totalOrdersCount">0</h3>
                 </div>
                 <div class="card-glass" style="padding: 1.5rem;">
                     <p style="color: var(--text-muted);">Total Menu</p>
-                    <h3 style="font-size: 1.8rem;">8</h3>
+                    <h3 style="font-size: 1.8rem;" id="totalMenusCount">...</h3>
                 </div>
             </div>
 
@@ -78,12 +87,12 @@
                     </thead>
                     <tbody id="orderTable">
                         <tr>
-                            <td>#ORD-001</td>
-                            <td>Budi Santoso</td>
-                            <td>Burger x2</td>
-                            <td>Rp 30.000</td>
-                            <td><span class="status-badge status-pending">Pending</span></td>
-                            <td><button style="border:none; background:none; color:var(--primary); cursor:pointer;">Detail</button></td>
+                            <td>#ORD-LOAD</td>
+                            <td>Memuat data...</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td><span class="status-badge status-pending">Loading</span></td>
+                            <td></td>
                         </tr>
                     </tbody>
                 </table>
@@ -92,8 +101,95 @@
     </div>
 
     <script>
-        // Masukkan script POLLING notifikasi di sini (seperti jawaban sebelumnya)
-        // Dan fetch data pesanan dari Order Service (Port 3003)
+        // --- KONFIGURASI API (WAJIB DIGANTI) ---
+        // Gunakan link Menu Service Vercel Anda
+        const API_MENU = "https://uas-menu-service-putri.vercel.app"; 
+
+        // 1. Cek Apakah User Sudah Login
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("Akses Ditolak! Harap login terlebih dahulu.");
+            window.location.href = "index.html";
+        }
+
+        // 2. Fungsi Logout
+        function logout() {
+            if(confirm("Yakin ingin keluar?")) {
+                localStorage.clear();
+                window.location.href = "index.html";
+            }
+        }
+
+        // 3. Ambil Data Menu (Untuk menghitung jumlah menu)
+        async function fetchMenuStats() {
+            try {
+                const response = await fetch(`${API_MENU}/api/menu`);
+                if(response.ok) {
+                    const data = await response.json();
+                    document.getElementById('totalMenusCount').innerText = data.length;
+                }
+            } catch (err) {
+                console.log("Gagal load menu stats");
+            }
+        }
+
+        // 4. Ambil Data Pesanan (Polling)
+        async function fetchOrders() {
+            try {
+                // Catatan: Ini akan bekerja jika Anda sudah membuat endpoint GET /api/orders di backend
+                // Jika belum ada, ini akan error 404, tapi tidak merusak tampilan lain.
+                const response = await fetch(`${API_MENU}/api/orders`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if(response.ok) {
+                    const orders = await response.json();
+                    document.getElementById('totalOrdersCount').innerText = orders.length;
+                    renderTable(orders);
+                } else {
+                    console.log("Belum ada endpoint pesanan atau error auth");
+                }
+            } catch (error) {
+                console.log("Menunggu koneksi pesanan...");
+            }
+        }
+
+        // 5. Render Tabel
+        function renderTable(orders) {
+            const tbody = document.getElementById('orderTable');
+            
+            if(orders.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada pesanan masuk.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = ''; // Hapus loading/dummy
+
+            orders.forEach(order => {
+                // Handle format tanggal atau ID
+                const shortId = order._id ? order._id.substring(0, 8).toUpperCase() : "ID-XXX";
+                
+                const row = `
+                    <tr>
+                        <td>#${shortId}</td>
+                        <td>${order.customerName || 'Pelanggan'}</td>
+                        <td>${order.items ? order.items.length : 0} Item</td>
+                        <td>Rp ${order.totalPrice ? order.totalPrice.toLocaleString() : '0'}</td>
+                        <td><span class="status-badge status-${order.status === 'pending' ? 'pending' : 'success'}">${order.status || 'pending'}</span></td>
+                        <td><button style="border:none; background:none; color:var(--primary); cursor:pointer;">Detail</button></td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Jalankan Script
+        fetchMenuStats();
+        fetchOrders();
+        
+        // Cek update otomatis setiap 10 detik
+        setInterval(fetchOrders, 10000);
+
     </script>
 </body>
 </html>

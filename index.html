@@ -186,6 +186,10 @@
     </div>
 
     <script>
+        // --- KONFIGURASI API (WAJIB DIGANTI DENGAN LINK VERCEL KAMU) ---
+        // Contoh: https://uas-auth-service-putri.vercel.app
+        const API_AUTH = "https://uas-auth-service-putri.vercel.app"; 
+
         // 1. Logic untuk Tombol Mata (Show/Hide Password)
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
@@ -202,19 +206,53 @@
             }
         }
 
-        // 2. Logic Login
+        // 2. Logic Login ke Backend Vercel
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
-            
-            console.log("Login:", email);
+            const password = document.getElementById('password').value;
+            const btn = document.querySelector('.btn-primary');
 
-            if(email.includes("admin")) {
-                alert("Login Berhasil sebagai Admin!");
-                window.location.href = "admin.html";
-            } else {
-                alert("Login Berhasil! Selamat datang.");
-                window.location.href = "menu.html"; 
+            // Efek Loading
+            const originalText = btn.innerText;
+            btn.innerText = "Memuat...";
+            btn.disabled = true;
+            
+            try {
+                // Tembak API Login Vercel
+                const response = await fetch(`${API_AUTH}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Simpan Token
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user)); // Simpan data user (role, nama, dll)
+
+                    alert("Login Berhasil! Selamat Datang.");
+
+                    // Redirect sesuai Role
+                    if(data.user.role === 'admin' || email.includes("admin")) {
+                        window.location.href = "admin.html";
+                    } else {
+                        window.location.href = "menu.html"; 
+                    }
+                } else {
+                    // Jika password salah
+                    alert("Gagal Masuk: " + (data.message || "Email atau password salah"));
+                }
+
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Terjadi kesalahan koneksi ke server Vercel.");
+            } finally {
+                // Kembalikan tombol
+                btn.innerText = originalText;
+                btn.disabled = false;
             }
         }
     </script>
