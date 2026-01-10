@@ -3,81 +3,218 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantinku - Menu</title>
+    <title>Kantinku - Pesan Makanan</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
-        :root { --primary: #ff7f50; --bg: #f8f9fa; --radius: 16px; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding-bottom: 50px; }
-        
-        .navbar { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 1000; }
-        .brand { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+        :root {
+            --primary: #ff7f50;
+            --primary-dark: #e6602e;
+            --bg-color: #f8f9fa;
+            --text-dark: #2d3436;
+            --text-grey: #636e72;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --radius: 16px;
+        }
 
-        .container { max-width: 1200px; margin: 20px auto; padding: 0 5%; }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-dark); padding-bottom: 80px; }
 
-        .card { background: white; border-radius: var(--radius); overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
-        .card:hover { transform: translateY(-5px); }
+        /* NAVBAR */
+        .navbar {
+            background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .brand { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
+        .nav-icons { display: flex; gap: 20px; align-items: center; }
+        .cart-icon { position: relative; cursor: pointer; font-size: 1.2rem; }
+        .badge { position: absolute; top: -8px; right: -8px; background: red; color: white; font-size: 0.7rem; padding: 2px 6px; border-radius: 50%; }
+
+        /* CONTROLS */
+        .controls { padding: 20px 5%; text-align: center; }
+        .search-box { position: relative; max-width: 500px; margin: 0 auto 20px; }
+        .search-box input {
+            width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; border: 1px solid #ddd;
+            outline: none; box-shadow: var(--shadow);
+        }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
+
+        .categories { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .chip {
+            padding: 8px 20px; border-radius: 50px; background: white; border: 1px solid #ddd;
+            cursor: pointer; transition: 0.3s; font-size: 0.9rem;
+        }
+        .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* MENU GRID */
+        .container { max-width: 1200px; margin: auto; padding: 0 5%; }
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; margin-top: 20px; }
+
+        /* CARD DESIGN FIX */
+        .card {
+            background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+            transition: 0.3s; display: flex; flex-direction: column; height: 100%;
+        }
+        .card-img-wrapper { width: 100%; height: 180px; background: #eee; overflow: hidden; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; display: block; }
         
-        /* CSS FIX UNTUK GAMBAR */
-        .card-img-container { width: 100%; height: 180px; background: #eee; overflow: hidden; }
-        .card-img { width: 100%; height: 100%; object-fit: cover; display: block; border: none; }
-        
-        .card-body { padding: 15px; }
-        .price { color: var(--primary); font-weight: 700; font-size: 1.1rem; }
-        .btn-add { background: var(--primary); color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer; float: right; }
+        .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; }
+        .card-desc { 
+            font-size: 0.85rem; color: var(--text-grey); margin-bottom: 15px;
+            display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .price { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+        .btn-add {
+            background: var(--primary); color: white; border: none; width: 35px; height: 35px;
+            border-radius: 50%; cursor: pointer; transition: 0.3s;
+        }
+
+        /* SIDEBAR CART */
+        .cart-sidebar {
+            position: fixed; top: 0; right: 0; width: 350px; height: 100vh; background: white;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.1); z-index: 200; transform: translateX(100%);
+            transition: 0.3s; display: flex; flex-direction: column;
+        }
+        .cart-sidebar.open { transform: translateX(0); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:150; display:none; }
+        .overlay.active { display:block; }
     </style>
 </head>
 <body>
+
     <nav class="navbar">
-        <div class="brand">Kantinku</div>
-        <a href="admin.html" style="text-decoration:none; color:#666;">Admin Mode</a>
+        <div class="brand"><i class="fas fa-utensils"></i> Kantinku</div>
+        <div class="nav-icons">
+            <a href="admin.html" style="text-decoration:none; color: var(--text-grey); font-size:0.9rem;">Admin Mode</a>
+            <div class="cart-icon" onclick="toggleCart()">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="badge" id="cartBadge">0</span>
+            </div>
+        </div>
     </nav>
 
+    <div class="controls">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Mau makan apa hari ini?" onkeyup="filterMenu()">
+        </div>
+        <div class="categories" id="categoryContainer">
+            <div class="chip active" onclick="filterCategory('all', this)">Semua</div>
+            <div class="chip" onclick="filterCategory('Makanan Berat', this)">Makanan Berat</div>
+            <div class="chip" onclick="filterCategory('Minuman', this)">Minuman</div>
+            <div class="chip" onclick="filterCategory('Snack', this)">Snack</div>
+        </div>
+    </div>
+
     <div class="container">
-        <h2>Rekomendasi Untukmu</h2>
-        <div id="loading" style="text-align:center;">Memuat menu...</div>
+        <h3 id="sectionTitle">Rekomendasi Untukmu</h3>
+        <div id="loading" style="text-align:center; padding: 20px;">Memuat Menu...</div>
         <div class="menu-grid" id="menuContainer"></div>
     </div>
 
-    <script>
-        // GUNAKAN HTTPS SELALU
-        const API_URL = "https://uas-menu-service.vercel.app";
+    <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div style="padding:20px; border-bottom:1px solid #eee; display:flex; justify-content:space-between;">
+            <h3>Keranjang</h3>
+            <i class="fas fa-times" onclick="toggleCart()" style="cursor:pointer"></i>
+        </div>
+        <div id="cartItems" style="flex-grow:1; padding:20px; overflow-y:auto;"></div>
+        <div style="padding:20px; border-top:1px solid #eee;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                <strong>Total</strong>
+                <span id="cartTotal">Rp 0</span>
+            </div>
+            <button style="width:100%; background:var(--primary); color:white; border:none; padding:12px; border-radius:8px; font-weight:bold;">Checkout</button>
+        </div>
+    </div>
 
-        async function loadMenu() {
+    <script>
+        // PERBAIKAN: Gunakan HTTPS agar tidak diblokir browser
+        const API_URL = "https://uas-menu-service.vercel.app"; 
+
+        let allMenus = [];
+        let cart = [];
+        let currentCategory = 'all';
+
+        document.addEventListener('DOMContentLoaded', fetchMenus);
+
+        async function fetchMenus() {
             try {
                 const res = await fetch(`${API_URL}/menu`);
-                const data = await res.json();
-                const container = document.getElementById('menuContainer');
+                allMenus = await res.json();
+                renderMenu(allMenus);
                 document.getElementById('loading').style.display = 'none';
-                container.innerHTML = '';
-
-                data.forEach(item => {
-                    // Validasi URL Gambar: Jika kosong atau pakai Google Drive, beri placeholder
-                    let imgUrl = item.gambar;
-                    if(!imgUrl || imgUrl.includes('drive.google.com') || imgUrl.includes('share.google')) {
-                        imgUrl = "https://via.placeholder.com/300x200?text=Gunakan+Link+Wikipedia";
-                    }
-
-                    container.innerHTML += `
-                        <div class="card">
-                            <div class="card-img-container">
-                                <img src="${imgUrl}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=Link+Gambar+Error'">
-                            </div>
-                            <div class="card-body">
-                                <h4 style="margin:0;">${item.nama}</h4>
-                                <p style="font-size:0.8rem; color:#666;">${item.deskripsi || 'Enak lezat'}</p>
-                                <span class="price">Rp ${item.harga.toLocaleString()}</span>
-                                <button class="btn-add">+</button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch (e) {
-                document.getElementById('loading').innerText = "Gagal memuat data.";
+            } catch (err) {
+                document.getElementById('loading').innerHTML = "Gagal memuat data dari server.";
             }
         }
-        loadMenu();
+
+        function renderMenu(data) {
+            const container = document.getElementById('menuContainer');
+            container.innerHTML = '';
+
+            data.forEach(item => {
+                // PERBAIKAN: Cek jika link gambar dari Google Drive (yang sering gagal)
+                let finalImg = item.gambar;
+                if(finalImg.includes('drive.google.com')) {
+                    finalImg = "https://via.placeholder.com/300x200?text=Link+Drive+Salah";
+                }
+
+                const card = `
+                    <div class="card">
+                        <div class="card-img-wrapper">
+                            <img src="${finalImg}" 
+                                 class="card-img" 
+                                 onerror="this.src='https://via.placeholder.com/300x200?text=Gambar+Error'">
+                        </div>
+                        <div class="card-body">
+                            <h4 class="card-title">${item.nama}</h4>
+                            <p class="card-desc">${item.deskripsi || 'Menu spesial Kantinku.'}</p>
+                            <div class="card-footer">
+                                <span class="price">Rp ${item.harga.toLocaleString('id-ID')}</span>
+                                <button class="btn-add" onclick="addToCart('${item._id}')"><i class="fas fa-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        function filterMenu() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allMenus.filter(m => 
+                m.nama.toLowerCase().includes(q) && (currentCategory === 'all' || m.kategori === currentCategory)
+            );
+            renderMenu(filtered);
+        }
+
+        function filterCategory(cat, el) {
+            currentCategory = cat;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+            filterMenu();
+        }
+
+        function toggleCart() {
+            document.getElementById('cartSidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function addToCart(id) {
+            const item = allMenus.find(m => m._id === id);
+            cart.push(item);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cartBadge').innerText = cart.length;
+            const total = cart.reduce((sum, item) => sum + item.harga, 0);
+            document.getElementById('cartTotal').innerText = "Rp " + total.toLocaleString('id-ID');
+        }
     </script>
 </body>
 </html>
