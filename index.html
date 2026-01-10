@@ -3,796 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Kantinku + Edit Cart</title>
+    <title>Masuk - Kantinku</title>
+    <link rel="stylesheet" href="style.css"> 
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
     <style>
-        /* --- CSS SETUP GLOBAL --- */
-        :root {
-            --primary: #ff8c42; /* Warna Orange Utama */
-            --secondary: #2d3436;
-            --bg-light: #f9f9f9;
-            --text-muted: #636e72;
-            --danger: #ff4757;
-            --info: #3498db; /* Warna Biru untuk Edit */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #fff5eb 0%, #ffffff 100%);
+            margin: 0;
+            font-family: sans-serif;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-light); color: var(--secondary); padding-bottom: 50px; }
+        .auth-card { width: 100%; max-width: 400px; text-align: center; }
 
-        /* --- 1. HEADER & NAVBAR --- */
-        .main-header {
-            position: sticky; top: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 1rem 5%;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.03);
-            display: flex; justify-content: space-between; align-items: center;
+        /* --- STYLE KHUSUS PASSWORD TOGGLE --- */
+        .password-wrapper {
+            position: relative;
+            width: 100%;
         }
 
-        .search-container { flex: 1; margin: 0 2rem; max-width: 500px; position: relative; }
-        .search-input {
-            width: 100%; padding: 10px 15px 10px 45px;
-            border-radius: 50px; border: 1px solid #eee;
-            background: #f8f9fa; outline: none; transition: 0.3s;
-        }
-        .search-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.1); }
-        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
-
-        .header-actions { display: flex; gap: 20px; align-items: center; }
-        .icon-btn { position: relative; cursor: pointer; color: var(--secondary); font-size: 1.2rem; transition: 0.3s; }
-        .icon-btn:hover { color: var(--primary); transform: scale(1.1); }
-        .cart-badge {
-            position: absolute; top: -8px; right: -8px;
-            background: var(--danger); color: white;
-            font-size: 0.7rem; font-weight: bold;
-            padding: 2px 6px; border-radius: 50%; border: 2px solid white;
+        .password-wrapper input {
+            padding-right: 45px;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
-        /* --- 2. CATEGORY RAIL --- */
-        .category-rail {
-            display: flex; gap: 12px; overflow-x: auto; padding: 1rem 5%;
-            background: white; scrollbar-width: none;
-        }
-        .category-rail::-webkit-scrollbar { display: none; }
-        
-        .cat-chip {
-            white-space: nowrap; padding: 8px 16px; border-radius: 20px;
-            background: #f1f2f6; color: var(--text-muted);
-            font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.3s;
-            border: 1px solid transparent;
-        }
-        .cat-chip:hover, .cat-chip.active {
-            background: #fff5eb; color: var(--primary); border-color: var(--primary);
+        /* Style tambahan untuk input biasa agar seragam */
+        .input-group input[type="email"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
         }
 
-        /* --- 3. FILTER & GRID --- */
-        .filter-bar { padding: 0 5%; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .filter-select { padding: 5px 10px; border: none; background: transparent; font-weight: 600; color: var(--secondary); cursor: pointer; outline: none; }
-
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.5rem; padding: 0 5% 4rem 5%; }
-        
-        .food-card {
-            background: white; border-radius: 12px; overflow: hidden; 
-            border: 1px solid #f0f0f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; transition: 0.3s;
-        }
-        .food-card:hover { transform: translateY(-5px); }
-        
-        .card-image-wrapper { position: relative; height: 160px; overflow: hidden; width: 100%; }
-        .food-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-        .food-card:hover .food-img { transform: scale(1.05); }
-        
-        .out-of-stock-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-            color: white; font-weight: bold; backdrop-filter: blur(2px); z-index: 2;
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 40%; /* Disesuaikan sedikit agar pas tengah */
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #888;
+            transition: color 0.3s;
+            font-size: 1rem;
+            z-index: 10;
         }
 
-        .btn-add {
-            width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            padding: 0; font-size: 1.2rem; border: none; background: var(--primary); color: white; cursor: pointer;
+        .toggle-password:hover {
+            color: #ff8c00;
         }
-        .btn-add:disabled { background: #ccc; cursor: not-allowed; }
 
-        /* --- 4. CSS SIDEBAR KERANJANG --- */
-        .cart-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 998;
-            display: none; backdrop-filter: blur(3px); transition: opacity 0.3s ease;
-        }
-        .cart-backdrop.active { display: block; }
-
-        .cart-sidebar {
-            position: fixed; top: 0; right: -400px; width: 350px; height: 100vh;
-            background: white; z-index: 999; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
-            display: flex; flex-direction: column;
-        }
-        .cart-sidebar.active { right: 0; }
-
-        .cart-header { padding: 20px; background: #fff; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .close-cart { font-size: 1.5rem; cursor: pointer; color: #888; }
-        .close-cart:hover { color: var(--danger); }
-
-        .cart-items-container { flex: 1; overflow-y: auto; padding: 20px; }
-
-        .cart-item { display: flex; align-items: flex-start; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
-
-        .cart-item img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; margin-right: 15px; }
-        .cart-item-details { flex: 1; }
-        .cart-item-title { font-size: 0.9rem; font-weight: bold; margin: 0 0 5px 0; display: block;}
-        .cart-item-price { font-size: 0.85rem; color: var(--primary); font-weight: 600; }
-        
-        .cart-item-controls { display: flex; align-items: center; gap: 8px; background: #f5f5f5; padding: 5px; border-radius: 20px; margin-left: 10px; }
-        .qty-btn { width: 24px; height: 24px; border-radius: 50%; border: none; background: white; cursor: pointer; font-weight: bold; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        
-        /* TOMBOL HAPUS & EDIT */
-        .cart-action-group {
-            display: flex; flex-direction: column; align-items: center; gap: 5px; margin-left: 10px;
-        }
-        .cart-btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; transition: 0.2s; }
-        .cart-delete-btn { color: #ccc; }
-        .cart-delete-btn:hover { color: var(--danger); }
-        
-        /* Style Tombol Edit Baru */
-        .cart-edit-btn { color: #ccc; }
-        .cart-edit-btn:hover { color: var(--info); }
-
-        .cart-footer { padding: 20px; border-top: 1px solid #eee; background: #fff; }
-        .cart-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; }
-        .btn-checkout { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-checkout:hover { opacity: 0.9; }
-
-        /* --- 5. STYLE MODAL CATATAN --- */
-        .note-modal-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 2000;
-            display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(2px); animation: fadeIn 0.2s;
-        }
-        .note-modal-content { background: white; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideUp 0.3s; }
-        @keyframes slideUp { from {transform: translateY(50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
-
-        .note-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        .close-note { font-size: 1.5rem; cursor: pointer; color: #aaa; }
-        
-        .note-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; margin-bottom: 15px; resize: none; height: 80px; font-family: inherit; outline: none; }
-        .note-input:focus { border-color: var(--primary); }
-
-        .note-qty-control { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-        .qty-btn-modal { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--primary); background: white; color: var(--primary); font-weight: bold; cursor: pointer; }
-        .qty-btn-modal:hover { background: var(--primary); color: white; }
-
-        /* --- 6. STYLE MODAL CHECKOUT & MAPS ONLINE --- */
-        .co-modal-content {
-            background: white; width: 100%; max-width: 500px; height: 90vh;
-            border-radius: 15px; padding: 0;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s; display: flex; flex-direction: column; overflow: hidden;
+        .btn-primary {
+            width: 100%;
+            padding: 10px;
+            background-color: #ff8c00;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1rem;
         }
         
-        .co-scroll-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; }
-
-        .co-header { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #eee; background: white; z-index: 10; }
-        .co-back-btn { font-size: 1.2rem; margin-right: 15px; cursor: pointer; color: #333; }
-        .co-title { font-weight: 700; font-size: 1.1rem; }
-
-        /* Map Section (Leaflet Container) */
-        .co-map-section { background: #fff; border-radius: 12px; border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; }
+        .btn-primary:hover {
+            background-color: #e67e00;
+        }
         
-        #map { height: 200px; width: 100%; z-index: 1; } /* Wadah Peta Leaflet */
-        
-        .map-controls { padding: 10px; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; border-top: 1px solid #eee; }
-        
-        /* Tombol Cari Lokasi (Orange) */
-        .btn-locate {
-            font-size: 0.8rem; background: var(--primary); color: white;
-            border: none; padding: 5px 12px; border-radius: 20px; cursor: pointer;
-            display: flex; align-items: center; gap: 5px;
-        }
-        .btn-locate:hover { opacity: 0.9; }
-
-        .co-address-box { padding: 15px; }
-        .co-addr-title { font-size: 0.9rem; font-weight: bold; }
-        .co-addr-text { font-size: 0.85rem; color: #666; line-height: 1.4; margin-top: 5px; }
-        .lat-lng-display { font-size: 0.7rem; color: #999; margin-top: 5px; font-family: monospace; }
-
-        /* Delivery Time */
-        .co-delivery-time { display: flex; align-items: center; gap: 10px; padding: 10px; background: #fff5eb; border: 1px solid #ffeaa7; border-radius: 8px; margin-bottom: 20px; color: #d35400; }
-
-        /* Order Summary */
-        .co-section-title { font-weight: 700; font-size: 1rem; }
-        .co-item-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
-        .co-item-name { color: #333; }
-        .co-item-price { font-weight: 600; }
-        
-        /* Payment Section */
-        .co-payment-select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; background: white; font-weight: 600; color: #333; }
-
-        /* Bottom Action Bar */
-        .co-footer { padding: 15px 20px; border-top: 1px solid #eee; background: white; }
-        
-        .co-footer-btn {
-            background: var(--primary); color: white;
-            padding: 12px 20px; border-radius: 50px; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 10px rgba(255, 140, 66, 0.4); transition: 0.3s;
-        }
-        .co-footer-btn:hover { transform: scale(1.02); opacity: 0.9; }
-        
-        .co-total-text { font-size: 0.8rem; font-weight: normal; display: block;}
-        .co-total-amount { font-size: 1.1rem; font-weight: bold; }
-
-        /* --- 7. MODAL SUKSES (NEW) --- */
-        .success-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 3000;
-            display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(4px);
-            animation: fadeIn 0.3s;
-        }
-
-        .success-card {
-            background: white; width: 85%; max-width: 350px;
-            border-radius: 20px; padding: 30px 20px;
-            text-align: center; position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes zoomIn { from {transform: scale(0.5); opacity: 0;} to {transform: scale(1); opacity: 1;} }
-
-        /* Animasi Lingkaran Hijau */
-        .success-icon-circle {
-            width: 80px; height: 80px; background: #2ecc71;
-            border-radius: 50%; margin: 0 auto 20px auto;
-            display: flex; justify-content: center; align-items: center;
-            position: relative; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-        }
-
-        .success-icon-circle i {
-            color: white; font-size: 2.5rem;
-            animation: check-pop 0.5s ease-in-out 0.2s backwards;
-        }
-
-        @keyframes check-pop { 
-            0% { transform: scale(0); } 
-            80% { transform: scale(1.2); } 
-            100% { transform: scale(1); } 
-        }
-
-        .success-title { font-size: 1.2rem; font-weight: 800; color: #333; margin-bottom: 10px; }
-        .success-desc { font-size: 0.9rem; color: #666; margin-bottom: 25px; line-height: 1.5; }
-
-        .btn-success-ok {
-            background: var(--primary); color: white; width: 100%;
-            padding: 12px; border: none; border-radius: 50px;
-            font-weight: bold; font-size: 1rem; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255, 140, 66, 0.4); transition: 0.2s;
-        }
-        .btn-success-ok:hover { transform: scale(1.02); }
-
-        /* Responsif Mobile */
-        @media (max-width: 768px) {
-            .search-container { display: none; }
-            .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .food-img { height: 120px; }
-            .btn-add { width: 30px; height: 30px; font-size: 1rem; }
-            .cart-sidebar { width: 85%; }
-            .co-modal-content { height: 100vh; border-radius: 0; }
+        .card-glass {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
     </style>
 </head>
 <body>
 
-    <div class="cart-backdrop" onclick="toggleCart()"></div>
+    <div class="card-glass auth-card">
+        <h1 style="font-size: 2rem; margin-bottom: 5px; margin-top: 0;">🍽️ Kantinku</h1>
+        <p class="mb-2" style="color: #666;">Masuk untuk mulai memesan</p>
 
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h2>Keranjang Saya</h2>
-            <span class="close-cart" onclick="toggleCart()">&times;</span>
-        </div>
-
-        <div class="cart-items-container" id="cartItemsList">
-            </div>
-
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total</span>
-                <span id="cartTotalValue">Rp 0</span>
-            </div>
-            <button class="btn-checkout" onclick="openCheckoutModal()">Bayar Sekarang</button>
-        </div>
-    </div>
-
-    <div id="noteModal" class="note-modal-backdrop">
-        <div class="note-modal-content">
-            <div class="note-header">
-                <h3 id="modalItemName">Nama Makanan</h3>
-                <span class="close-note" onclick="closeNoteModal()">&times;</span>
+        <form onsubmit="handleLogin(event)" style="margin-top: 2rem;">
+            <div class="input-group" style="text-align: left;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Email</label>
+                <input type="email" id="email" placeholder="contoh: user@gmail.com" required>
             </div>
             
-            <div class="note-body">
-                <p id="modalItemPrice" style="color: var(--primary); font-weight: bold; margin-bottom: 15px;">Rp 0</p>
-                <label style="font-size: 0.9rem; font-weight: 600;">Catatan Pesanan</label>
-                <textarea id="modalItemNote" class="note-input" placeholder="Contoh: Jangan pedas, gapake bawang..."></textarea>
-                <div class="note-qty-control">
-                    <span style="font-weight: 600;">Jumlah:</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <button class="qty-btn-modal" onclick="adjustModalQty(-1)">-</button>
-                        <span id="modalItemQty" style="font-weight: bold; width: 20px; text-align: center;">1</span>
-                        <button class="qty-btn-modal" onclick="adjustModalQty(1)">+</button>
-                    </div>
+            <div class="input-group" style="text-align: left;">
+                <label style="font-weight: bold; display: block; margin-bottom: 5px;">Password</label>
+                <div class="password-wrapper">
+                    <input type="password" id="password" placeholder="••••••••" required>
+                    <i class="fa-solid fa-eye toggle-password" id="toggleIcon" onclick="togglePasswordVisibility()"></i>
                 </div>
             </div>
-
-            <button id="btnConfirmNote" class="btn-checkout" onclick="confirmAddToCart()" style="margin-top: 10px;">
-                Tambah ke Keranjang
-            </button>
-        </div>
-    </div>
-
-    <div id="checkoutModal" class="note-modal-backdrop" style="z-index: 2100;">
-        <div class="co-modal-content">
-            <div class="co-header">
-                <i class="fa-solid fa-arrow-left co-back-btn" onclick="closeCheckoutModal()"></i>
-                <span class="co-title">Konfirmasi Pesanan</span>
-            </div>
-
-            <div class="co-scroll-area" id="checkoutScrollArea">
-                <div class="co-map-section">
-                    <div id="map"></div>
-                    
-                    <div class="map-controls">
-                        <span style="font-size:0.8rem; color:#666;">Geser pin untuk atur titik</span>
-                        <button class="btn-locate" onclick="getMyLocation()">
-                            <i class="fa-solid fa-crosshairs"></i> Lokasi Saya
-                        </button>
-                    </div>
-
-                    <div class="co-address-box">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="co-addr-title">Alamat Pengantaran</div>
-                            <button onclick="focusOnMap()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; font-weight:bold; cursor:pointer;">
-                                Ubah
-                            </button>
-                        </div>
-                        <p class="co-addr-text" id="addressText">
-                            Menunggu titik lokasi...
-                        </p>
-                        <div class="lat-lng-display" id="latLngText">-</div>
-                    </div>
-                </div>
-
-                <div class="co-delivery-time">
-                    <i class="fa-solid fa-stopwatch"></i>
-                    <div>
-                        <strong>15 - 20 menit</strong>
-                        <div style="font-size:0.8rem;">Waktu proses & pengantaran</div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h4 class="co-section-title" style="margin-bottom: 0;">Ringkasan Pesanan</h4>
-                        <button onclick="editOrder()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; font-weight:bold; cursor:pointer;">
-                            Ubah
-                        </button>
-                    </div>
-                    
-                    <div id="checkoutItemsList" style="background: #f9f9f9; padding: 10px; border-radius: 8px;">
-                        </div>
-                </div>
-
-                <h4 class="co-section-title" style="margin-bottom: 10px;">Metode Pembayaran</h4>
-                <select class="co-payment-select">
-                    <option value="cash">💵 Tunai (Bayar di Tempat)</option>
-                    <option value="qris">📱 QRIS / GoPay</option>
-                </select>
-            </div>
-
-            <div class="co-footer">
-                <div class="co-footer-btn" onclick="processFinalOrder()">
-                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                        <span class="co-total-text">Total Pembayaran</span>
-                        <span class="co-total-amount" id="checkoutTotalValue">Rp 0</span>
-                    </div>
-                    <div style="font-weight: bold; font-size: 1rem;">
-                        Pesan <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="successModal" class="success-backdrop">
-        <div class="success-card">
-            <div class="success-icon-circle">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <h3 class="success-title">Pesanan Diterima!</h3>
-            <p class="success-desc">
-                Yeay! Pesananmu sedang diproses oleh kantin. Mohon tunggu di meja ya.
-            </p>
             
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-size: 0.8rem; text-align: left;">
-                <strong>📍 Diantar ke:</strong><br>
-                <span id="successLocationText" style="color: #555;">-</span>
-            </div>
+            <button type="submit" class="btn-primary" style="margin-top: 10px;">Masuk Sekarang</button>
+        </form>
 
-            <button class="btn-success-ok" onclick="closeSuccessModal()">
-                Oke, Siap!
-            </button>
-        </div>
+        <p class="mt-2" style="font-size: 0.9rem; margin-top: 15px;">
+           Belum punya akun? <a href="register.html" style="color: #ff8c00; font-weight: 600; text-decoration: none;">Daftar disini</a>
+        </p>
     </div>
-
-    <header class="main-header">
-        <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">
-            🍽️ Kantinku
-        </div>
-        <div class="search-container">
-            <i class="fa-solid fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Mau makan apa hari ini? (Soto, Burger...)">
-        </div>
-        <div class="header-actions">
-            <div class="icon-btn" onclick="toggleCart()">
-                <i class="fa-solid fa-basket-shopping"></i>
-                <span class="cart-badge" id="cartCount">0</span>
-            </div>
-            <div class="icon-btn" onclick="alert('Halaman Profil belum tersedia')">
-                <i class="fa-regular fa-user"></i>
-            </div>
-        </div>
-    </header>
-
-    <nav class="category-rail">
-        <div class="cat-chip active" onclick="filterCategory('all', this)">🔥 Semua</div>
-        <div class="cat-chip" onclick="filterCategory('makanan_berat', this)">🍛 Makanan Berat</div>
-        <div class="cat-chip" onclick="filterCategory('minuman', this)">🥤 Minuman</div>
-        <div class="cat-chip" onclick="filterCategory('snack', this)">🍟 Snack</div>
-        <div class="cat-chip" onclick="filterCategory('sarapan', this)">🍞 Sarapan</div>
-        <div class="cat-chip" onclick="filterCategory('promo', this)">🏷️ Promo</div>
-    </nav>
-
-    <div class="filter-bar">
-        <h3 style="font-size: 1.2rem;">Rekomendasi Untukmu</h3>
-        <select class="filter-select" onchange="sortMenu(this.value)">
-            <option value="terlaris">Terlaris</option>
-            <option value="termurah">Termurah</option>
-            <option value="termahal">Termahal</option>
-        </select>
-    </div>
-
-    <div class="menu-grid" id="menuContainer">
-        <p style="color: var(--text-muted); text-align: center; grid-column: 1/-1;">Sedang memuat menu lezat...</p>
-    </div>
-
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // --- 1. DATA MASTER ---
-        const mockMenu = [
-            { id: 1, name: "Ayam Geprek Sultan", price: 15000, category: "makanan_berat", isPromo: true, image: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=60", rating: 4.8, stock: 10 },
-            { id: 2, name: "Es Teh Manis Jumbo", price: 5000, category: "minuman", isPromo: false, image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=500&q=60", rating: 4.5, stock: 50 },
-            { id: 3, name: "Burger Daging Keju", price: 18000, category: "snack", isPromo: false, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=500&q=60", rating: 4.9, stock: 0 },
-            { id: 4, name: "Nasi Goreng Spesial", price: 12000, category: "makanan_berat", isPromo: true, image: "https://images.unsplash.com/photo-1603133872878-684f10830303?auto=format&fit=crop&w=500&q=60", rating: 4.7, stock: 15 },
-            { id: 5, name: "Kentang Goreng", price: 8000, category: "snack", isPromo: false, image: "https://images.unsplash.com/photo-1630384060421-cb20d0e0649d?auto=format&fit=crop&w=500&q=60", rating: 4.6, stock: 20 },
-            { id: 6, name: "Roti Bakar Coklat", price: 10000, category: "sarapan", isPromo: false, image: "https://images.unsplash.com/photo-1584776296944-ab6fb9866bd3?auto=format&fit=crop&w=500&q=60", rating: 4.7, stock: 12 },
-        ];
+        // 1. LOGIC JAVASCRIPT TOGGLE
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('password');
+            const icon = document.getElementById('toggleIcon');
 
-        let currentDataSet = [...mockMenu]; 
-        let cart = []; 
-        let tempSelectedId = null;
-        let tempQty = 1;
-        let editingItemIndex = -1; // New State: -1 artinya mode tambah baru, >-1 artinya mode edit
-
-        // --- VARIABEL MAPS ---
-        let map;
-        let marker;
-        // Koordinat Default (Bandar Lampung)
-        const defaultLat = -5.397140; 
-        const defaultLng = 105.266789;
-
-        // --- RENDER MENU ---
-        function renderMenu(data) {
-            const container = document.getElementById('menuContainer');
-            container.innerHTML = '';
-            if (data.length === 0) {
-                container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; margin-top: 2rem; color: #888;">Menu tidak ditemukan.</p>`;
-                return;
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = "password";
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
-            data.forEach(item => {
-                const isHabis = item.stock <= 0;
-                const statusOverlay = isHabis ? '<div class="out-of-stock-overlay">HABIS</div>' : '';
-                const promoBadge = item.isPromo ? `<div style="position:absolute; top:10px; left:10px; background:var(--danger); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">PROMO</div>` : '';
-                const btnState = isHabis ? 'disabled' : `onclick="openNoteModal(${item.id})"`;
-
-                container.innerHTML += `
-                    <div class="food-card">
-                        <div class="card-image-wrapper">
-                            ${statusOverlay} ${promoBadge} 
-                            <img src="${item.image}" class="food-img" alt="${item.name}">
-                            <div class="rating-badge" style="position:absolute; top:10px; right:10px; background:white; padding:4px 8px; border-radius:15px; font-size:0.8rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">⭐ ${item.rating}</div>
-                        </div>
-                        <div class="food-info" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1;">
-                            <h3 style="font-size:1rem; margin-bottom:5px;">${item.name}</h3>
-                            <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">${item.category.replace('_', ' ').toUpperCase()}</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                                <span class="price-tag" style="font-weight: bold; color: var(--primary);">Rp ${item.price.toLocaleString()}</span>
-                                <button class="btn-add" ${btnState}><i class="fa-solid fa-plus"></i></button>
-                            </div>
-                        </div>
-                    </div>`;
-            });
         }
 
-        renderMenu(currentDataSet);
-
-        // --- MODAL & CART FUNCTIONS ---
-        function openNoteModal(id) {
-            // Reset ke mode Tambah Baru
-            editingItemIndex = -1;
-            document.getElementById('btnConfirmNote').innerText = "Tambah ke Keranjang";
-
-            const item = mockMenu.find(i => i.id === id);
-            if(!item) return;
-            tempSelectedId = id; tempQty = 1;
-            document.getElementById('modalItemName').innerText = item.name;
-            document.getElementById('modalItemPrice').innerText = 'Rp ' + item.price.toLocaleString();
-            document.getElementById('modalItemNote').value = '';
-            document.getElementById('modalItemQty').innerText = tempQty;
-            document.getElementById('noteModal').style.display = 'flex';
-        }
-
-        function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
-        
-        function adjustModalQty(change) { 
-            tempQty += change; 
-            if(tempQty < 1) tempQty = 1; 
-            document.getElementById('modalItemQty').innerText = tempQty; 
-        }
-
-        // FUNGSI BARU: Edit Item di Keranjang
-        function editCartItem(index) {
-            editingItemIndex = index;
-            const itemInCart = cart[index];
-            const itemMaster = mockMenu.find(i => i.id === itemInCart.id);
+        // 2. LOGIC LOGIN (PERBAIKAN UTAMA DISINI)
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
             
-            tempSelectedId = itemInCart.id;
-            tempQty = itemInCart.qty;
-            
-            // Isi data modal dengan data yang sedang diedit
-            document.getElementById('modalItemName').innerText = itemMaster.name;
-            document.getElementById('modalItemPrice').innerText = 'Rp ' + itemMaster.price.toLocaleString();
-            document.getElementById('modalItemNote').value = itemInCart.note || '';
-            document.getElementById('modalItemQty').innerText = tempQty;
+            console.log("Login:", email);
 
-            // Ubah tombol menjadi 'Simpan'
-            document.getElementById('btnConfirmNote').innerText = "Simpan Perubahan";
-
-            // Buka Modal
-            document.getElementById('noteModal').style.display = 'flex';
-        }
-
-        function confirmAddToCart() {
-            const item = mockMenu.find(i => i.id === tempSelectedId);
-            const noteValue = document.getElementById('modalItemNote').value;
-
-            if (editingItemIndex > -1) {
-                // LOGIKA EDIT: Update item yang sudah ada
-                cart[editingItemIndex].qty = tempQty;
-                cart[editingItemIndex].note = noteValue;
+            if(email.includes("admin")) {
+                alert("Login Berhasil sebagai Admin!");
+                window.location.href = "admin.html";
+            } else {
+                alert("Login Berhasil! Selamat datang.");
                 
-                // Reset mode edit
-                editingItemIndex = -1;
-            } else {
-                // LOGIKA ADD: Tambah item baru / merge
-                const existingItem = cart.find(i => i.id === tempSelectedId && i.note === noteValue);
-                if (existingItem) { 
-                    existingItem.qty += tempQty; 
-                } else { 
-                    cart.push({ ...item, qty: tempQty, note: noteValue }); 
-                }
+                // --- PERBAIKAN PENTING ---
+                // Dulu: index.html (salah, karena akan balik ke login lagi)
+                // Sekarang: menu.html (benar, masuk ke dashboard menu)
+                window.location.href = "menu.html"; 
             }
-            
-            closeNoteModal(); 
-            updateCartUI();
-            
-            const sidebar = document.getElementById('cartSidebar'); 
-            if(!sidebar.classList.contains('active')) toggleCart();
-        }
-
-        function toggleCart() {
-            const sidebar = document.getElementById('cartSidebar');
-            const backdrop = document.querySelector('.cart-backdrop');
-            sidebar.classList.toggle('active'); backdrop.classList.toggle('active');
-        }
-
-        function updateCartUI() {
-            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-            document.getElementById('cartCount').innerText = totalItems;
-            const cartList = document.getElementById('cartItemsList');
-            cartList.innerHTML = '';
-            let grandTotal = 0;
-            
-            if(cart.length === 0) {
-                cartList.innerHTML = `<div style="text-align: center; margin-top: 50px; color: #888;"><i class="fa-solid fa-basket-shopping" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.3;"></i><p>Keranjang masih kosong.</p></div>`;
-            } else {
-                cart.forEach((item, index) => {
-                    const totalPerItem = item.price * item.qty; grandTotal += totalPerItem;
-                    const noteHtml = item.note ? `<div style="font-size: 0.75rem; color: #666; font-style: italic; margin-top: 3px;">📝 "${item.note}"</div>` : '';
-                    
-                    cartList.innerHTML += `
-                        <div class="cart-item">
-                            <img src="${item.image}" alt="${item.name}">
-                            <div class="cart-item-details">
-                                <span class="cart-item-title">${item.name}</span>
-                                <span class="cart-item-price">Rp ${item.price.toLocaleString()}</span>
-                                ${noteHtml}
-                            </div>
-                            <div class="cart-item-controls">
-                                <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-                                <span style="font-size: 0.9rem;">${item.qty}</span>
-                                <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
-                            </div>
-                            
-                            <div class="cart-action-group">
-                                <button class="cart-btn-icon cart-delete-btn" onclick="removeItem(${index})" title="Hapus">
-                                    <i class="fa-solid fa-trash"></i>
-                                </button>
-                                <button class="cart-btn-icon cart-edit-btn" onclick="editCartItem(${index})" title="Edit Catatan/Jumlah">
-                                    <i class="fa-solid fa-pen"></i>
-                                </button>
-                            </div>
-                        </div>`;
-                });
-            }
-            document.getElementById('cartTotalValue').innerText = 'Rp ' + grandTotal.toLocaleString();
-        }
-
-        function changeQty(index, change) { 
-            cart[index].qty += change; 
-            if (cart[index].qty <= 0) cart.splice(index, 1); 
-            updateCartUI(); 
-        }
-        function removeItem(index) { cart.splice(index, 1); updateCartUI(); }
-
-        // --- CHECKOUT & MAPS LOGIC ---
-        function openCheckoutModal() {
-            if(cart.length === 0) { alert("Keranjang masih kosong kak!"); return; }
-            toggleCart(); // Tutup keranjang samping
-
-            // Render Ringkasan
-            const summaryList = document.getElementById('checkoutItemsList');
-            summaryList.innerHTML = '';
-            let totalOrder = 0;
-            
-            cart.forEach(item => {
-                const subtotal = item.price * item.qty;
-                totalOrder += subtotal;
-                const noteText = item.note ? `<br><small style="color:#666">Catatan: ${item.note}</small>` : '';
-                
-                summaryList.innerHTML += `
-                <div class="co-item-row">
-                    <span class="co-item-name">${item.qty}x ${item.name} ${noteText}</span>
-                    <span class="co-item-price">Rp ${subtotal.toLocaleString()}</span>
-                </div>`;
-            });
-
-            document.getElementById('checkoutTotalValue').innerText = 'Rp ' + totalOrder.toLocaleString();
-            document.getElementById('checkoutModal').style.display = 'flex';
-
-            // Init Maps if not initialized
-            setTimeout(() => {
-                if(!map) initMap();
-                else map.invalidateSize();
-            }, 300);
-        }
-
-        function closeCheckoutModal() {
-            document.getElementById('checkoutModal').style.display = 'none';
-        }
-
-        function editOrder() {
-            closeCheckoutModal();
-            toggleCart(); // Buka lagi keranjang
-        }
-
-        function initMap() {
-            map = L.map('map').setView([defaultLat, defaultLng], 15);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
-
-            marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
-
-            // Event saat marker digeser
-            marker.on('dragend', function(e) {
-                const pos = e.target.getLatLng();
-                getAddressFromCoords(pos.lat, pos.lng);
-            });
-
-            // Load alamat default
-            getAddressFromCoords(defaultLat, defaultLng);
-        }
-
-        function getMyLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(position => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    
-                    map.setView([lat, lng], 17);
-                    marker.setLatLng([lat, lng]);
-                    getAddressFromCoords(lat, lng);
-                }, () => {
-                    alert("Gagal mendapatkan lokasi. Pastikan GPS aktif.");
-                });
-            } else {
-                alert("Browser tidak mendukung Geolocation.");
-            }
-        }
-
-        function focusOnMap() {
-            document.getElementById('checkoutScrollArea').scrollTop = 0;
-            if(map) map.invalidateSize();
-        }
-
-        // Mock Reverse Geocoding (Simulasi Alamat)
-        function getAddressFromCoords(lat, lng) {
-            document.getElementById('latLngText').innerText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            document.getElementById('addressText').innerText = "Memuat alamat...";
-            
-            // Simulasi fetch API
-            setTimeout(() => {
-                document.getElementById('addressText').innerText = `Jl. Kopi Robusta No. ${Math.floor(Math.random() * 100)}, Bandar Lampung (Titik Sesuai Peta)`;
-            }, 800);
-        }
-
-        function processFinalOrder() {
-            const addr = document.getElementById('addressText').innerText;
-            document.getElementById('successLocationText').innerText = addr;
-            
-            closeCheckoutModal();
-            document.getElementById('successModal').style.display = 'flex';
-        }
-
-        function closeSuccessModal() {
-            document.getElementById('successModal').style.display = 'none';
-            cart = []; // Kosongkan keranjang
-            updateCartUI();
-        }
-
-        // --- FILTERING ---
-        function filterCategory(cat, element) {
-            document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-
-            if(cat === 'all') {
-                renderMenu(mockMenu);
-            } else {
-                const filtered = mockMenu.filter(item => item.category === cat);
-                renderMenu(filtered);
-            }
-        }
-
-        function sortMenu(type) {
-            let sorted = [...mockMenu]; // Copy array
-            if(type === 'terlaris') {
-                // Mock sort by stock (semakin dikit stock, semakin laris)
-                sorted.sort((a,b) => a.stock - b.stock);
-            } else if(type === 'termurah') {
-                sorted.sort((a,b) => a.price - b.price);
-            } else if(type === 'termahal') {
-                sorted.sort((a,b) => b.price - a.price);
-            }
-            renderMenu(sorted);
         }
     </script>
 </body>
