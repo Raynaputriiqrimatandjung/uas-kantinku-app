@@ -2,194 +2,93 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - Kantinku</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Input Menu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #ff8c42;
-            --bg-light: #f9f9f9;
-            --text-muted: #636e72;
-            --danger: #ff4757;
-            --radius-md: 10px;
-            --shadow-soft: 0 4px 20px rgba(0,0,0,0.05);
-        }
-        body { margin: 0; font-family: 'Poppins', sans-serif; background: var(--bg-light); }
-        .admin-layout { display: flex; min-height: 100vh; }
-        .sidebar { width: 250px; background: white; padding: 2rem; border-right: 1px solid #eee; }
-        .main-content { flex: 1; padding: 2rem; }
-        
-        .menu-item { display: block; padding: 10px; color: var(--text-muted); text-decoration: none; margin-bottom: 5px; border-radius: 8px; }
-        .menu-item.active { background: #fff5eb; color: var(--primary); font-weight: 600; }
-        
-        .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-bottom: 2rem; }
-        .card-glass { background: white; border-radius: var(--radius-md); box-shadow: var(--shadow-soft); }
-        .table-container { background: white; border-radius: var(--radius-md); padding: 1.5rem; box-shadow: var(--shadow-soft); }
-        
-        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
-        th { text-align: left; color: var(--text-muted); padding: 1rem; border-bottom: 2px solid #eee; }
-        td { padding: 1rem; border-bottom: 1px solid #eee; }
-        
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-success { background: #d4edda; color: #155724; }
+        body { font-family: 'Poppins', sans-serif; padding: 20px; max-width: 500px; margin: auto; background-color: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #e67e22; }
+        label { display: block; margin-top: 10px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;}
+        button { width: 100%; margin-top: 20px; padding: 12px; background-color: #e67e22; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        button:hover { background-color: #d35400; }
+        .back { display: block; text-align: center; margin-top: 15px; text-decoration: none; color: #555; }
     </style>
 </head>
 <body>
 
-    <div class="admin-layout">
-        <aside class="sidebar">
-            <h3 style="color: var(--primary); margin-bottom: 2rem;">👑 Admin Panel</h3>
-            <nav>
-                <a href="#" class="menu-item active">📊 Dashboard</a>
-                <a href="#" class="menu-item">🍔 Manajemen Menu</a>
-                <a href="#" class="menu-item">📝 Riwayat Pesanan</a>
-                <a href="#" class="menu-item">⚙️ Pengaturan Toko</a>
-                <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-                <a href="#" onclick="logout()" class="menu-item" style="color: var(--danger);">🚪 Logout</a>
-            </nav>
-        </aside>
+    <div class="card">
+        <h2>🍴 Tambah Menu Baru</h2>
+        <form onsubmit="tambahMenu(event)">
+            
+            <label>Nama Makanan</label>
+            <input type="text" id="nama" placeholder="Contoh: Ayam Geprek Sultan" required>
 
-        <main class="main-content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h2>Ringkasan Toko</h2>
-                <div class="card-glass" style="padding: 0.5rem 1rem; display: flex; gap: 10px; align-items: center;">
-                    <span>🔔 Notifikasi</span>
-                    <span style="background: var(--danger); color: white; padding: 2px 6px; border-radius: 50%; font-size: 0.8rem;">3</span>
-                </div>
-            </div>
+            <label>Harga (Rp)</label>
+            <input type="number" id="harga" placeholder="Contoh: 15000" required>
 
-            <div class="stat-cards">
-                <div class="card-glass" style="padding: 1.5rem;">
-                    <p style="color: var(--text-muted);">Total Pendapatan</p>
-                    <h3 style="font-size: 1.8rem;">Rp 1.250.000</h3>
-                </div>
-                <div class="card-glass" style="padding: 1.5rem;">
-                    <p style="color: var(--text-muted);">Pesanan Masuk</p>
-                    <h3 style="font-size: 1.8rem;" id="totalOrdersCount">0</h3>
-                </div>
-                <div class="card-glass" style="padding: 1.5rem;">
-                    <p style="color: var(--text-muted);">Total Menu</p>
-                    <h3 style="font-size: 1.8rem;" id="totalMenusCount">...</h3>
-                </div>
-            </div>
+            <label>Kategori</label>
+            <select id="kategori">
+                <option value="makanan">Makanan Berat</option>
+                <option value="minuman">Minuman</option>
+                <option value="snack">Snack</option>
+            </select>
 
-            <div class="table-container">
-                <h3>Pesanan Terbaru</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Pelanggan</th>
-                            <th>Menu</th>
-                            <th>Total</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orderTable">
-                        <tr>
-                            <td>#ORD-LOAD</td>
-                            <td>Memuat data...</td>
-                            <td>-</td>
-                            <td>-</td>
-                            <td><span class="status-badge status-pending">Loading</span></td>
-                            <td></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </main>
+            <label>Link Gambar (URL)</label>
+            <input type="text" id="gambar" placeholder="https://..." required>
+            <small style="color:gray; font-size: 12px;">*Cari gambar di Google -> Klik Kanan -> Copy Image Address</small>
+
+            <label>Deskripsi</label>
+            <textarea id="deskripsi" rows="2" placeholder="Deskripsi singkat..."></textarea>
+
+            <button type="submit" id="btnSubmit">Simpan ke Database</button>
+        </form>
+        
+        <a href="menu.html" class="back">← Cek Menu</a>
     </div>
 
     <script>
-        // --- KONFIGURASI API (WAJIB DIGANTI) ---
-        // Gunakan link Menu Service Vercel Anda
-        const API_MENU = "https://uas-menu-service-putri.vercel.app"; 
+        // ⚠️ PENTING: Ganti link ini dengan Link Vercel 'MENU SERVICE' kamu
+        // (Pastikan sama dengan yang ada di menu.html)
+        const API_MENU = "https://uas-menu-service-kamu.vercel.app"; 
 
-        // 1. Cek Apakah User Sudah Login
-        const token = localStorage.getItem('token');
-        if (!token) {
-            alert("Akses Ditolak! Harap login terlebih dahulu.");
-            window.location.href = "index.html";
-        }
+        async function tambahMenu(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.innerText = "Menyimpan...";
+            btn.disabled = true;
 
-        // 2. Fungsi Logout
-        function logout() {
-            if(confirm("Yakin ingin keluar?")) {
-                localStorage.clear();
-                window.location.href = "index.html";
-            }
-        }
+            const data = {
+                nama: document.getElementById('nama').value,
+                harga: Number(document.getElementById('harga').value),
+                kategori: document.getElementById('kategori').value,
+                gambar: document.getElementById('gambar').value,
+                deskripsi: document.getElementById('deskripsi').value
+            };
 
-        // 3. Ambil Data Menu (Untuk menghitung jumlah menu)
-        async function fetchMenuStats() {
             try {
-                const response = await fetch(`${API_MENU}/api/menu`);
-                if(response.ok) {
-                    const data = await response.json();
-                    document.getElementById('totalMenusCount').innerText = data.length;
-                }
-            } catch (err) {
-                console.log("Gagal load menu stats");
-            }
-        }
-
-        // 4. Ambil Data Pesanan (Polling)
-        async function fetchOrders() {
-            try {
-                // Catatan: Ini akan bekerja jika Anda sudah membuat endpoint GET /api/orders di backend
-                // Jika belum ada, ini akan error 404, tapi tidak merusak tampilan lain.
-                const response = await fetch(`${API_MENU}/api/orders`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
+                const response = await fetch(`${API_MENU}/menu`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
 
-                if(response.ok) {
-                    const orders = await response.json();
-                    document.getElementById('totalOrdersCount').innerText = orders.length;
-                    renderTable(orders);
+                if (response.ok) {
+                    alert("✅ Berhasil! Menu sudah masuk database.");
+                    document.querySelector('form').reset(); // Kosongkan form
                 } else {
-                    console.log("Belum ada endpoint pesanan atau error auth");
+                    const res = await response.json();
+                    alert("Gagal: " + res.message);
                 }
             } catch (error) {
-                console.log("Menunggu koneksi pesanan...");
+                console.error(error);
+                alert("Gagal koneksi ke server.");
+            } finally {
+                btn.innerText = "Simpan ke Database";
+                btn.disabled = false;
             }
         }
-
-        // 5. Render Tabel
-        function renderTable(orders) {
-            const tbody = document.getElementById('orderTable');
-            
-            if(orders.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada pesanan masuk.</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = ''; // Hapus loading/dummy
-
-            orders.forEach(order => {
-                // Handle format tanggal atau ID
-                const shortId = order._id ? order._id.substring(0, 8).toUpperCase() : "ID-XXX";
-                
-                const row = `
-                    <tr>
-                        <td>#${shortId}</td>
-                        <td>${order.customerName || 'Pelanggan'}</td>
-                        <td>${order.items ? order.items.length : 0} Item</td>
-                        <td>Rp ${order.totalPrice ? order.totalPrice.toLocaleString() : '0'}</td>
-                        <td><span class="status-badge status-${order.status === 'pending' ? 'pending' : 'success'}">${order.status || 'pending'}</span></td>
-                        <td><button style="border:none; background:none; color:var(--primary); cursor:pointer;">Detail</button></td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
-        }
-
-        // Jalankan Script
-        fetchMenuStats();
-        fetchOrders();
-        
-        // Cek update otomatis setiap 10 detik
-        setInterval(fetchOrders, 10000);
-
     </script>
 </body>
 </html>
