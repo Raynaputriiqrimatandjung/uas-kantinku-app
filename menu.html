@@ -57,7 +57,7 @@
 
         /* MENU GRID */
         .container { max-width: 1200px; margin: auto; padding: 0 5%; }
-        h3.section-title { margin-bottom: 20px; font-weight: 600; }
+        h3.section-title { margin: 20px 0; font-weight: 600; }
         
         .menu-grid {
             display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px;
@@ -69,12 +69,19 @@
             transition: transform 0.3s ease; position: relative; display: flex; flex-direction: column;
         }
         .card:hover { transform: translateY(-5px); }
-        .card-img { height: 180px; width: 100%; object-fit: cover; background-color: #eee; }
+        
+        /* FIX GAMBAR DISINI */
+        .card-img { 
+            height: 180px; 
+            width: 100%; 
+            object-fit: cover; 
+            background-color: #eee;
+            display: block; 
+        }
         
         .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; color: var(--text-dark); }
         
-        /* --- PERBAIKAN CSS DI SINI (line-clamp) --- */
         .card-desc { 
             font-size: 0.85rem; 
             color: var(--text-grey); 
@@ -82,11 +89,10 @@
             flex-grow: 1; 
             display: -webkit-box; 
             -webkit-line-clamp: 2; 
-            line-clamp: 2; /* Ini baris yang diminta VS Code */
+            line-clamp: 2; 
             -webkit-box-orient: vertical; 
             overflow: hidden; 
         }
-        /* ------------------------------------------ */
         
         .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
         .price { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
@@ -98,14 +104,13 @@
         }
         .btn-add:hover { background: var(--primary-dark); transform: scale(1.1); }
 
-        /* HABIS STATE */
         .card.habis { opacity: 0.7; filter: grayscale(100%); pointer-events: none; }
         .card.habis::after {
             content: "HABIS"; position: absolute; top: 10px; right: 10px;
             background: #444; color: white; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; font-weight: bold;
         }
 
-        /* KERANJANG SIDEBAR */
+        /* KERANJANG */
         .cart-sidebar {
             position: fixed; top: 0; right: 0; width: 350px; height: 100vh; background: white;
             box-shadow: -5px 0 30px rgba(0,0,0,0.1); z-index: 200; transform: translateX(100%);
@@ -114,26 +119,20 @@
         .cart-sidebar.open { transform: translateX(0); }
         .cart-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
         .cart-items { flex-grow: 1; overflow-y: auto; padding: 20px; }
-        
         .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .item-info h4 { font-size: 0.9rem; margin-bottom: 4px; }
         .item-info p { font-size: 0.85rem; color: var(--primary); font-weight: 600; }
         .item-controls { display: flex; align-items: center; gap: 10px; }
         .btn-qty { width: 25px; height: 25px; background: #eee; border: none; border-radius: 4px; cursor: pointer; }
-
         .cart-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; }
         .total-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; margin-bottom: 15px; }
         .btn-checkout { width: 100%; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-        /* LOADING & ERROR */
-        #loading { text-align: center; padding: 50px; color: var(--text-grey); }
         .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:150; display:none;}
         .overlay.active { display:block; }
 
         @media (max-width: 600px) {
             .cart-sidebar { width: 100%; }
             .menu-grid { grid-template-columns: 1fr 1fr; gap: 15px; }
-            .chip { padding: 6px 15px; font-size: 0.8rem; }
         }
     </style>
 </head>
@@ -155,21 +154,18 @@
             <i class="fas fa-search"></i>
             <input type="text" id="searchInput" placeholder="Mau makan apa hari ini?" onkeyup="filterMenu()">
         </div>
-        <div class="categories" id="categoryContainer">
+        <div class="categories">
             <div class="chip active" onclick="filterCategory('all', this)">Semua</div>
-            <div class="chip" onclick="filterCategory('makanan', this)">Makanan Berat</div>
-            <div class="chip" onclick="filterCategory('minuman', this)">Minuman</div>
-            <div class="chip" onclick="filterCategory('snack', this)">Snack</div>
-            <div class="chip" onclick="filterCategory('sarapan', this)">Sarapan</div>
-            <div class="chip" onclick="filterCategory('promo', this)">Promo</div>
+            <div class="chip" onclick="filterCategory('Makanan Berat', this)">Makanan</div>
+            <div class="chip" onclick="filterCategory('Minuman', this)">Minuman</div>
+            <div class="chip" onclick="filterCategory('Snack', this)">Snack</div>
         </div>
     </div>
 
     <div class="container">
-        <h3 class="section-title">Daftar Menu</h3>
+        <h3 class="section-title">Rekomendasi Untukmu</h3>
         <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memuat Menu...</div>
-        <div class="menu-grid" id="menuContainer">
-            </div>
+        <div class="menu-grid" id="menuContainer"></div>
     </div>
 
     <div class="overlay" id="overlay" onclick="toggleCart()"></div>
@@ -178,68 +174,62 @@
             <h3>Keranjang Saya</h3>
             <i class="fas fa-times" style="cursor:pointer;" onclick="toggleCart()"></i>
         </div>
-        <div class="cart-items" id="cartItems">
-            <p style="text-align:center; color:#999; margin-top:20px;">Keranjang masih kosong</p>
-        </div>
+        <div class="cart-items" id="cartItems"></div>
         <div class="cart-footer">
-            <div class="total-row">
-                <span>Total</span>
-                <span id="cartTotal">Rp 0</span>
-            </div>
+            <div class="total-row"><span>Total</span><span id="cartTotal">Rp 0</span></div>
             <button class="btn-checkout" onclick="checkout()">Pesan Sekarang</button>
         </div>
     </div>
 
     <script>
-        // --- KONFIGURASI API ---
-        // ⚠️ GANTI LINK INI DENGAN LINK MENU-SERVICE VERCEL KAMU YANG BENAR ⚠️
+        // FIX URL: GUNAKAN HTTPS DAN TANPA SLASH DI AKHIR
         const API_URL = "https://uas-menu-service.vercel.app"; 
 
         let allMenus = [];
         let cart = [];
         let currentCategory = 'all';
 
-        // 1. Fetch Data saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', fetchMenus);
+
+        async function fetchMenus() {
             try {
                 const res = await fetch(`${API_URL}/menu`);
-                if(!res.ok) throw new Error("Gagal fetch");
                 allMenus = await res.json();
                 renderMenu(allMenus);
                 document.getElementById('loading').style.display = 'none';
             } catch (err) {
-                console.error(err);
-                document.getElementById('loading').innerHTML = "Gagal memuat data. Cek koneksi / URL Backend.";
+                document.getElementById('loading').innerHTML = "Gagal terhubung ke server backend.";
             }
-        });
+        }
 
-        // 2. Render Kartu Menu (READ)
         function renderMenu(data) {
             const container = document.getElementById('menuContainer');
             container.innerHTML = '';
 
             if (data.length === 0) {
-                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Tidak ada menu ditemukan.</p>';
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Menu tidak ditemukan.</p>';
                 return;
             }
 
             data.forEach(item => {
                 const isHabis = item.status === 'habis';
-                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.harga);
+                const formattedPrice = new Intl.NumberFormat('id-ID', { 
+                    style: 'currency', currency: 'IDR', minimumFractionDigits: 0 
+                }).format(item.harga);
                 
-                // Card HTML Component
+                // PERBAIKAN: Img SRC dan Onerror Handler
                 const card = `
                     <div class="card ${isHabis ? 'habis' : ''}">
-                        <img src="${item.gambar}" alt="${item.nama}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        <img src="${item.gambar}" 
+                             alt="${item.nama}" 
+                             class="card-img" 
+                             onerror="this.src='https://via.placeholder.com/300x200?text=Gambar+Error'">
                         <div class="card-body">
                             <h4 class="card-title">${item.nama}</h4>
-                            <p class="card-desc">${item.deskripsi || 'Enak dan lezat.'}</p>
+                            <p class="card-desc">${item.deskripsi || 'Tidak ada deskripsi.'}</p>
                             <div class="card-footer">
                                 <span class="price">${formattedPrice}</span>
-                                ${!isHabis ? `
-                                <button class="btn-add" onclick="addToCart('${item._id}')">
-                                    <i class="fas fa-plus"></i>
-                                </button>` : ''}
+                                ${!isHabis ? `<button class="btn-add" onclick="addToCart('${item._id}')"><i class="fas fa-plus"></i></button>` : ''}
                             </div>
                         </div>
                     </div>
@@ -248,30 +238,23 @@
             });
         }
 
-        // 3. Logic Filter & Search
         function filterMenu() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            
             const filtered = allMenus.filter(item => {
                 const matchName = item.nama.toLowerCase().includes(query);
                 const matchCat = currentCategory === 'all' || item.kategori === currentCategory;
                 return matchName && matchCat;
             });
-
             renderMenu(filtered);
         }
 
         function filterCategory(cat, element) {
             currentCategory = cat;
-            
-            // UI Active Chip
             document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
             element.classList.add('active');
-            
             filterMenu();
         }
 
-        // 4. Logic Keranjang (Cart Logic)
         function toggleCart() {
             document.getElementById('cartSidebar').classList.toggle('open');
             document.getElementById('overlay').classList.toggle('active');
@@ -279,26 +262,17 @@
 
         function addToCart(id) {
             const item = allMenus.find(m => m._id === id);
-            const existingItem = cart.find(c => c._id === id);
-
-            if (existingItem) {
-                existingItem.qty++;
-            } else {
-                cart.push({ ...item, qty: 1 });
-            }
+            const existing = cart.find(c => c._id === id);
+            if (existing) existing.qty++;
+            else cart.push({ ...item, qty: 1 });
             updateCartUI();
-            
-            // Buka keranjang otomatis agar user sadar
-            if(!document.getElementById('cartSidebar').classList.contains('open')) {
-                toggleCart();
-            }
         }
 
         function updateCartQty(id, change) {
-            const index = cart.findIndex(c => c._id === id);
-            if (index !== -1) {
-                cart[index].qty += change;
-                if (cart[index].qty <= 0) cart.splice(index, 1);
+            const idx = cart.findIndex(c => c._id === id);
+            if (idx !== -1) {
+                cart[idx].qty += change;
+                if (cart[idx].qty <= 0) cart.splice(idx, 1);
                 updateCartUI();
             }
         }
@@ -307,50 +281,34 @@
             const container = document.getElementById('cartItems');
             const badge = document.getElementById('cartBadge');
             const totalEl = document.getElementById('cartTotal');
-            
-            let totalPrice = 0;
-            let totalCount = 0;
+            let total = 0, count = 0;
 
             if (cart.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Keranjang kosong</p>';
-                badge.style.display = 'none';
-                totalEl.innerText = "Rp 0";
-                return;
+                container.innerHTML = '<p style="text-align:center; color:#999;">Keranjang masih kosong</p>';
+            } else {
+                container.innerHTML = '';
+                cart.forEach(item => {
+                    total += item.harga * item.qty;
+                    count += item.qty;
+                    container.innerHTML += `
+                        <div class="cart-item">
+                            <div class="item-info"><h4>${item.nama}</h4><p>Rp ${item.harga.toLocaleString()}</p></div>
+                            <div class="item-controls">
+                                <button class="btn-qty" onclick="updateCartQty('${item._id}', -1)">-</button>
+                                <span>${item.qty}</span>
+                                <button class="btn-qty" onclick="updateCartQty('${item._id}', 1)">+</button>
+                            </div>
+                        </div>`;
+                });
             }
-
-            container.innerHTML = '';
-            cart.forEach(item => {
-                totalPrice += item.harga * item.qty;
-                totalCount += item.qty;
-
-                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.harga * item.qty);
-
-                container.innerHTML += `
-                    <div class="cart-item">
-                        <div class="item-info">
-                            <h4>${item.nama}</h4>
-                            <p>${formattedPrice}</p>
-                        </div>
-                        <div class="item-controls">
-                            <button class="btn-qty" onclick="updateCartQty('${item._id}', -1)">-</button>
-                            <span style="font-size:0.9rem; font-weight:bold;">${item.qty}</span>
-                            <button class="btn-qty" onclick="updateCartQty('${item._id}', 1)">+</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            badge.style.display = 'block';
-            badge.innerText = totalCount;
-            totalEl.innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPrice);
+            badge.innerText = count;
+            totalEl.innerText = "Rp " + total.toLocaleString();
         }
 
         function checkout() {
-            if (cart.length === 0) return alert("Keranjang kosong!");
-            alert("Terima kasih! Pesanan Anda sedang disiapkan dapur.");
-            cart = [];
-            updateCartUI();
-            toggleCart();
+            if (cart.length === 0) return;
+            alert("Pesanan berhasil dikirim!");
+            cart = []; updateCartUI(); toggleCart();
         }
     </script>
 </body>
