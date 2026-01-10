@@ -3,720 +3,355 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Kantinku</title>
-    
+    <title>Kantinku - Pesan Makanan</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
+    
     <style>
-        /* --- CSS DESIGN (TIDAK ADA YANG DIUBAH) --- */
         :root {
-            --primary: #ff8c42;
-            --secondary: #2d3436;
-            --bg-light: #f9f9f9;
-            --text-muted: #636e72;
-            --danger: #ff4757;
-            --info: #3498db;
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-        body { background-color: var(--bg-light); color: var(--secondary); padding-bottom: 50px; }
-
-        /* HEADER */
-        .main-header {
-            position: sticky; top: 0;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            padding: 1rem 5%;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.03);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .search-container { flex: 1; margin: 0 2rem; max-width: 500px; position: relative; }
-        .search-input {
-            width: 100%; padding: 10px 15px 10px 45px;
-            border-radius: 50px; border: 1px solid #eee;
-            background: #f8f9fa; outline: none; transition: 0.3s;
-        }
-        .search-input:focus { background: #fff; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 140, 66, 0.1); }
-        .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
-        .header-actions { display: flex; gap: 20px; align-items: center; }
-        .icon-btn { position: relative; cursor: pointer; color: var(--secondary); font-size: 1.2rem; transition: 0.3s; }
-        .icon-btn:hover { color: var(--primary); transform: scale(1.1); }
-        .cart-badge {
-            position: absolute; top: -8px; right: -8px;
-            background: var(--danger); color: white;
-            font-size: 0.7rem; font-weight: bold;
-            padding: 2px 6px; border-radius: 50%; border: 2px solid white;
-            display: none;
+            --primary: #ff7f50; /* Coral Orange */
+            --primary-dark: #e6602e;
+            --bg-color: #f8f9fa;
+            --text-dark: #2d3436;
+            --text-grey: #636e72;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --radius: 16px;
         }
 
-        /* CATEGORY RAIL */
-        .category-rail {
-            display: flex; gap: 12px; overflow-x: auto; padding: 1rem 5%;
-            background: white; scrollbar-width: none;
-        }
-        .category-rail::-webkit-scrollbar { display: none; }
-        .cat-chip {
-            white-space: nowrap; padding: 8px 16px; border-radius: 20px;
-            background: #f1f2f6; color: var(--text-muted);
-            font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: 0.3s;
-            border: 1px solid transparent;
-        }
-        .cat-chip:hover, .cat-chip.active {
-            background: #fff5eb; color: var(--primary); border-color: var(--primary);
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg-color); color: var(--text-dark); padding-bottom: 80px; }
 
-        /* FILTER & GRID */
-        .filter-bar { padding: 0 5%; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
-        .filter-select { padding: 5px 10px; border: none; background: transparent; font-weight: 600; color: var(--secondary); cursor: pointer; outline: none; }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 1.5rem; padding: 0 5% 4rem 5%; }
+        /* NAVBAR */
+        .navbar {
+            background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .brand { font-size: 1.5rem; font-weight: 700; color: var(--primary); display: flex; align-items: center; gap: 10px; }
         
-        /* FOOD CARD */
-        .food-card {
-            background: white; border-radius: 12px; overflow: hidden; 
-            border: 1px solid #f0f0f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column; transition: 0.3s;
+        .nav-icons { display: flex; gap: 20px; align-items: center; }
+        .cart-icon { position: relative; cursor: pointer; font-size: 1.2rem; color: var(--text-dark); transition: 0.3s; }
+        .cart-icon:hover { color: var(--primary); }
+        .badge {
+            position: absolute; top: -8px; right: -8px; background: red; color: white;
+            font-size: 0.7rem; padding: 2px 6px; border-radius: 50%; font-weight: bold;
         }
-        .food-card:hover { transform: translateY(-5px); }
-        .card-image-wrapper { position: relative; height: 160px; overflow: hidden; width: 100%; }
-        .food-img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
-        .food-card:hover .food-img { transform: scale(1.05); }
-        .out-of-stock-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center;
-            color: white; font-weight: bold; backdrop-filter: blur(2px); z-index: 2;
+
+        /* SEARCH & FILTER */
+        .controls { padding: 20px 5%; text-align: center; }
+        .search-box {
+            position: relative; max-width: 500px; margin: 0 auto 20px;
         }
+        .search-box input {
+            width: 100%; padding: 12px 20px 12px 45px; border-radius: 50px; border: 1px solid #ddd;
+            font-family: inherit; box-shadow: var(--shadow); outline: none; transition: 0.3s;
+        }
+        .search-box input:focus { border-color: var(--primary); }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
+
+        .categories { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .chip {
+            padding: 8px 20px; border-radius: 50px; background: white; border: 1px solid #ddd;
+            cursor: pointer; transition: 0.3s; font-size: 0.9rem; font-weight: 500;
+        }
+        .chip.active, .chip:hover { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(255, 127, 80, 0.3); }
+
+        /* MENU GRID */
+        .container { max-width: 1200px; margin: auto; padding: 0 5%; }
+        h3.section-title { margin-bottom: 20px; font-weight: 600; }
+        
+        .menu-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px;
+        }
+
+        /* CARD DESIGN */
+        .card {
+            background: white; border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow);
+            transition: transform 0.3s ease; position: relative; display: flex; flex-direction: column;
+        }
+        .card:hover { transform: translateY(-5px); }
+        .card-img { height: 180px; width: 100%; object-fit: cover; background-color: #eee; }
+        
+        .card-body { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 5px; color: var(--text-dark); }
+        
+        /* --- PERBAIKAN CSS DI SINI (line-clamp) --- */
+        .card-desc { 
+            font-size: 0.85rem; 
+            color: var(--text-grey); 
+            margin-bottom: 15px; 
+            flex-grow: 1; 
+            display: -webkit-box; 
+            -webkit-line-clamp: 2; 
+            line-clamp: 2; /* Ini baris yang diminta VS Code */
+            -webkit-box-orient: vertical; 
+            overflow: hidden; 
+        }
+        /* ------------------------------------------ */
+        
+        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .price { font-weight: 700; color: var(--primary); font-size: 1.1rem; }
+        
         .btn-add {
-            width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            padding: 0; font-size: 1.2rem; border: none; background: var(--primary); color: white; cursor: pointer;
+            background: var(--primary); color: white; border: none; width: 35px; height: 35px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: 0.3s;
         }
-        .btn-add:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-add:hover { background: var(--primary-dark); transform: scale(1.1); }
 
-        /* CART SIDEBAR */
-        .cart-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5); z-index: 998;
-            display: none; backdrop-filter: blur(3px); transition: opacity 0.3s ease;
+        /* HABIS STATE */
+        .card.habis { opacity: 0.7; filter: grayscale(100%); pointer-events: none; }
+        .card.habis::after {
+            content: "HABIS"; position: absolute; top: 10px; right: 10px;
+            background: #444; color: white; font-size: 0.7rem; padding: 5px 10px; border-radius: 4px; font-weight: bold;
         }
-        .cart-backdrop.active { display: block; }
+
+        /* KERANJANG SIDEBAR */
         .cart-sidebar {
-            position: fixed; top: 0; right: -400px; width: 350px; height: 100vh;
-            background: white; z-index: 999; box-shadow: -5px 0 15px rgba(0,0,0,0.1);
-            transition: right 0.4s cubic-bezier(0.77, 0, 0.175, 1);
-            display: flex; flex-direction: column;
+            position: fixed; top: 0; right: 0; width: 350px; height: 100vh; background: white;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.1); z-index: 200; transform: translateX(100%);
+            transition: transform 0.3s cubic-bezier(0.77, 0.2, 0.05, 1.0); display: flex; flex-direction: column;
         }
-        .cart-sidebar.active { right: 0; }
-        .cart-header { padding: 20px; background: #fff; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-        .close-cart { font-size: 1.5rem; cursor: pointer; color: #888; }
-        .close-cart:hover { color: var(--danger); }
-        .cart-items-container { flex: 1; overflow-y: auto; padding: 20px; }
-        .cart-item { display: flex; align-items: flex-start; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed #eee; animation: fadeIn 0.3s ease; }
-        @keyframes fadeIn { from { opacity:0; transform:translateY(10px);} to { opacity:1; transform:translateY(0);} }
-        .cart-item img { width: 60px; height: 60px; border-radius: 10px; object-fit: cover; margin-right: 15px; }
-        .cart-item-details { flex: 1; }
-        .cart-item-title { font-size: 0.9rem; font-weight: bold; margin: 0 0 5px 0; display: block;}
-        .cart-item-price { font-size: 0.85rem; color: var(--primary); font-weight: 600; }
-        .cart-item-controls { display: flex; align-items: center; gap: 8px; background: #f5f5f5; padding: 5px; border-radius: 20px; margin-left: 10px; }
-        .qty-btn { width: 24px; height: 24px; border-radius: 50%; border: none; background: white; cursor: pointer; font-weight: bold; color: #333; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .cart-action-group { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-left: 10px; }
-        .cart-btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; transition: 0.2s; }
-        .cart-delete-btn { color: #ccc; }
-        .cart-delete-btn:hover { color: var(--danger); }
-        .cart-edit-btn { color: #ccc; }
-        .cart-edit-btn:hover { color: var(--info); }
-        .cart-footer { padding: 20px; border-top: 1px solid #eee; background: #fff; }
-        .cart-total { display: flex; justify-content: space-between; font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; }
-        .btn-checkout { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-checkout:hover { opacity: 0.9; }
+        .cart-sidebar.open { transform: translateX(0); }
+        .cart-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .cart-items { flex-grow: 1; overflow-y: auto; padding: 20px; }
+        
+        .cart-item { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .item-info h4 { font-size: 0.9rem; margin-bottom: 4px; }
+        .item-info p { font-size: 0.85rem; color: var(--primary); font-weight: 600; }
+        .item-controls { display: flex; align-items: center; gap: 10px; }
+        .btn-qty { width: 25px; height: 25px; background: #eee; border: none; border-radius: 4px; cursor: pointer; }
 
-        /* MODAL CATATAN */
-        .note-modal-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.6); z-index: 2000;
-            display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(2px); animation: fadeIn 0.2s;
-        }
-        .note-modal-content { background: white; width: 90%; max-width: 400px; border-radius: 15px; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: slideUp 0.3s; }
-        @keyframes slideUp { from {transform: translateY(50px); opacity: 0;} to {transform: translateY(0); opacity: 1;} }
-        .note-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; }
-        .close-note { font-size: 1.5rem; cursor: pointer; color: #aaa; }
-        .note-input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; margin-top: 5px; margin-bottom: 15px; resize: none; height: 80px; font-family: inherit; outline: none; }
-        .note-input:focus { border-color: var(--primary); }
-        .note-qty-control { display: flex; justify-content: space-between; align-items: center; background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 15px; }
-        .qty-btn-modal { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--primary); background: white; color: var(--primary); font-weight: bold; cursor: pointer; }
-        .qty-btn-modal:hover { background: var(--primary); color: white; }
+        .cart-footer { padding: 20px; border-top: 1px solid #eee; background: #fafafa; }
+        .total-row { display: flex; justify-content: space-between; font-weight: 700; font-size: 1.1rem; margin-bottom: 15px; }
+        .btn-checkout { width: 100%; background: var(--primary); color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
-        /* MODAL CHECKOUT & MAPS */
-        .co-modal-content {
-            background: white; width: 100%; max-width: 500px; height: 90vh;
-            border-radius: 15px; padding: 0;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s; display: flex; flex-direction: column; overflow: hidden;
-        }
-        .co-scroll-area { flex: 1; overflow-y: auto; padding: 20px; scroll-behavior: smooth; }
-        .co-header { display: flex; align-items: center; padding: 15px 20px; border-bottom: 1px solid #eee; background: white; z-index: 10; }
-        .co-back-btn { font-size: 1.2rem; margin-right: 15px; cursor: pointer; color: #333; }
-        .co-title { font-weight: 700; font-size: 1.1rem; }
-        .co-map-section { background: #fff; border-radius: 12px; border: 1px solid #eee; overflow: hidden; margin-bottom: 20px; }
-        #map { height: 200px; width: 100%; z-index: 1; }
-        .map-controls { padding: 10px; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; border-top: 1px solid #eee; }
-        .btn-locate {
-            font-size: 0.8rem; background: var(--primary); color: white;
-            border: none; padding: 5px 12px; border-radius: 20px; cursor: pointer;
-            display: flex; align-items: center; gap: 5px;
-        }
-        .co-address-box { padding: 15px; }
-        .co-addr-title { font-size: 0.9rem; font-weight: bold; }
-        .co-addr-text { font-size: 0.85rem; color: #666; line-height: 1.4; margin-top: 5px; }
-        .lat-lng-display { font-size: 0.7rem; color: #999; margin-top: 5px; font-family: monospace; }
-        .co-delivery-time { display: flex; align-items: center; gap: 10px; padding: 10px; background: #fff5eb; border: 1px solid #ffeaa7; border-radius: 8px; margin-bottom: 20px; color: #d35400; }
-        .co-section-title { font-weight: 700; font-size: 1rem; }
-        .co-item-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; }
-        .co-item-name { color: #333; }
-        .co-item-price { font-weight: 600; }
-        .co-payment-select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px; background: white; font-weight: 600; color: #333; }
-        .co-footer { padding: 15px 20px; border-top: 1px solid #eee; background: white; }
-        .co-footer-btn {
-            background: var(--primary); color: white;
-            padding: 12px 20px; border-radius: 50px; cursor: pointer;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 10px rgba(255, 140, 66, 0.4); transition: 0.3s;
-        }
-        .co-total-text { font-size: 0.8rem; font-weight: normal; display: block;}
-        .co-total-amount { font-size: 1.1rem; font-weight: bold; }
+        /* LOADING & ERROR */
+        #loading { text-align: center; padding: 50px; color: var(--text-grey); }
+        .overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:150; display:none;}
+        .overlay.active { display:block; }
 
-        /* MODAL SUKSES */
-        .success-backdrop {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 3000;
-            display: none; justify-content: center; align-items: center;
-            backdrop-filter: blur(4px); animation: fadeIn 0.3s;
-        }
-        .success-card {
-            background: white; width: 85%; max-width: 350px;
-            border-radius: 20px; padding: 30px 20px;
-            text-align: center; position: relative;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: zoomIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        @keyframes zoomIn { from {transform: scale(0.5); opacity: 0;} to {transform: scale(1); opacity: 1;} }
-        .success-icon-circle {
-            width: 80px; height: 80px; background: #2ecc71;
-            border-radius: 50%; margin: 0 auto 20px auto;
-            display: flex; justify-content: center; align-items: center;
-            position: relative; box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
-        }
-        .success-icon-circle i {
-            color: white; font-size: 2.5rem;
-            animation: check-pop 0.5s ease-in-out 0.2s backwards;
-        }
-        @keyframes check-pop { 
-            0% { transform: scale(0); } 80% { transform: scale(1.2); } 100% { transform: scale(1); } 
-        }
-        .success-title { font-size: 1.2rem; font-weight: 800; color: #333; margin-bottom: 10px; }
-        .success-desc { font-size: 0.9rem; color: #666; margin-bottom: 25px; line-height: 1.5; }
-        .btn-success-ok {
-            background: var(--primary); color: white; width: 100%;
-            padding: 12px; border: none; border-radius: 50px;
-            font-weight: bold; font-size: 1rem; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(255, 140, 66, 0.4); transition: 0.2s;
-        }
-        .btn-success-ok:hover { transform: scale(1.02); }
-
-        /* Media Queries */
-        @media (max-width: 768px) {
-            .search-container { display: none; }
-            .menu-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .food-img { height: 120px; }
-            .btn-add { width: 30px; height: 30px; font-size: 1rem; }
-            .cart-sidebar { width: 85%; }
-            .co-modal-content { height: 100vh; border-radius: 0; }
+        @media (max-width: 600px) {
+            .cart-sidebar { width: 100%; }
+            .menu-grid { grid-template-columns: 1fr 1fr; gap: 15px; }
+            .chip { padding: 6px 15px; font-size: 0.8rem; }
         }
     </style>
 </head>
 <body>
 
-    <div class="cart-backdrop" onclick="toggleCart()"></div>
-
-    <div class="cart-sidebar" id="cartSidebar">
-        <div class="cart-header">
-            <h2>Keranjang Saya</h2>
-            <span class="close-cart" onclick="toggleCart()">&times;</span>
-        </div>
-        <div class="cart-items-container" id="cartItemsList">
-            </div>
-        <div class="cart-footer">
-            <div class="cart-total">
-                <span>Total</span>
-                <span id="cartTotalValue">Rp 0</span>
-            </div>
-            <button class="btn-checkout" onclick="openCheckoutModal()">Bayar Sekarang</button>
-        </div>
-    </div>
-
-    <div id="noteModal" class="note-modal-backdrop">
-        <div class="note-modal-content">
-            <div class="note-header">
-                <h3 id="modalItemName">Nama Makanan</h3>
-                <span class="close-note" onclick="closeNoteModal()">&times;</span>
-            </div>
-            
-            <div class="note-body">
-                <p id="modalItemPrice" style="color: var(--primary); font-weight: bold; margin-bottom: 15px;">Rp 0</p>
-                <label style="font-size: 0.9rem; font-weight: 600;">Catatan Pesanan</label>
-                <textarea id="modalItemNote" class="note-input" placeholder="Contoh: Jangan pedas, gapake bawang..."></textarea>
-                <div class="note-qty-control">
-                    <span style="font-weight: 600;">Jumlah:</span>
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <button class="qty-btn-modal" onclick="adjustModalQty(-1)">-</button>
-                        <span id="modalItemQty" style="font-weight: bold; width: 20px; text-align: center;">1</span>
-                        <button class="qty-btn-modal" onclick="adjustModalQty(1)">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <button id="btnConfirmNote" class="btn-checkout" onclick="confirmAddToCart()" style="margin-top: 10px;">
-                Tambah ke Keranjang
-            </button>
-        </div>
-    </div>
-
-    <div id="checkoutModal" class="note-modal-backdrop" style="z-index: 2100;">
-        <div class="co-modal-content">
-            <div class="co-header">
-                <i class="fa-solid fa-arrow-left co-back-btn" onclick="closeCheckoutModal()"></i>
-                <span class="co-title">Konfirmasi Pesanan</span>
-            </div>
-
-            <div class="co-scroll-area" id="checkoutScrollArea">
-                <div class="co-map-section">
-                    <div id="map"></div>
-                    <div class="map-controls">
-                        <span style="font-size:0.8rem; color:#666;">Geser pin untuk atur titik</span>
-                        <button class="btn-locate" onclick="getMyLocation()">
-                            <i class="fa-solid fa-crosshairs"></i> Lokasi Saya
-                        </button>
-                    </div>
-                    <div class="co-address-box">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div class="co-addr-title">Alamat Pengantaran</div>
-                            <button onclick="focusOnMap()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; font-weight:bold; cursor:pointer;">
-                                Ubah
-                            </button>
-                        </div>
-                        <p class="co-addr-text" id="addressText">Menunggu titik lokasi...</p>
-                        <div class="lat-lng-display" id="latLngText">-</div>
-                    </div>
-                </div>
-
-                <div class="co-delivery-time">
-                    <i class="fa-solid fa-stopwatch"></i>
-                    <div>
-                        <strong>15 - 20 menit</strong>
-                        <div style="font-size:0.8rem;">Waktu proses & pengantaran</div>
-                    </div>
-                </div>
-
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <h4 class="co-section-title" style="margin-bottom: 0;">Ringkasan Pesanan</h4>
-                        <button onclick="editOrder()" style="background:none; border:none; color:var(--primary); font-size:0.8rem; font-weight:bold; cursor:pointer;">
-                            Ubah
-                        </button>
-                    </div>
-                    <div id="checkoutItemsList" style="background: #f9f9f9; padding: 10px; border-radius: 8px;"></div>
-                </div>
-
-                <h4 class="co-section-title" style="margin-bottom: 10px;">Metode Pembayaran</h4>
-                <select class="co-payment-select">
-                    <option value="cash">💵 Tunai (Bayar di Tempat)</option>
-                    <option value="qris">📱 QRIS / GoPay</option>
-                </select>
-            </div>
-
-            <div class="co-footer">
-                <div class="co-footer-btn" onclick="processFinalOrder()">
-                    <div style="display: flex; flex-direction: column; align-items: flex-start;">
-                        <span class="co-total-text">Total Pembayaran</span>
-                        <span class="co-total-amount" id="checkoutTotalValue">Rp 0</span>
-                    </div>
-                    <div style="font-weight: bold; font-size: 1rem;">
-                        Pesan <i class="fa-solid fa-arrow-right" style="margin-left: 5px;"></i>
-                    </div>
-                </div>
+    <nav class="navbar">
+        <div class="brand"><i class="fas fa-utensils"></i> Kantinku</div>
+        <div class="nav-icons">
+            <a href="admin.html" style="text-decoration:none; color: var(--text-grey); font-size:0.9rem;">Admin Mode</a>
+            <div class="cart-icon" onclick="toggleCart()">
+                <i class="fas fa-shopping-bag"></i>
+                <span class="badge" id="cartBadge">0</span>
             </div>
         </div>
-    </div>
-
-    <div id="successModal" class="success-backdrop">
-        <div class="success-card">
-            <div class="success-icon-circle">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <h3 class="success-title">Pesanan Diterima!</h3>
-            <p class="success-desc">
-                Yeay! Pesananmu sedang diproses oleh kantin. Mohon tunggu di meja ya.
-            </p>
-            <div style="background: #f9f9f9; padding: 10px; border-radius: 10px; margin-bottom: 20px; font-size: 0.8rem; text-align: left;">
-                <strong>📍 Diantar ke:</strong><br>
-                <span id="successLocationText" style="color: #555;">-</span>
-            </div>
-            <button class="btn-success-ok" onclick="closeSuccessModal()">
-                Oke, Siap!
-            </button>
-        </div>
-    </div>
-
-    <header class="main-header">
-        <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary);">
-            🍽️ Kantinku
-        </div>
-        <div class="search-container">
-            <i class="fa-solid fa-search search-icon"></i>
-            <input type="text" class="search-input" placeholder="Mau makan apa hari ini? (Soto, Burger...)">
-        </div>
-        <div class="header-actions">
-            <div class="icon-btn" onclick="toggleCart()">
-                <i class="fa-solid fa-basket-shopping"></i>
-                <span class="cart-badge" id="cartCount">0</span>
-            </div>
-            <div class="icon-btn" onclick="alert('Halaman Profil belum tersedia')">
-                <i class="fa-regular fa-user"></i>
-            </div>
-        </div>
-    </header>
-
-    <nav class="category-rail">
-        <div class="cat-chip active" onclick="filterCategory('all', this)">🔥 Semua</div>
-        <div class="cat-chip" onclick="filterCategory('makanan_berat', this)">🍛 Makanan Berat</div>
-        <div class="cat-chip" onclick="filterCategory('minuman', this)">🥤 Minuman</div>
-        <div class="cat-chip" onclick="filterCategory('snack', this)">🍟 Snack</div>
-        <div class="cat-chip" onclick="filterCategory('sarapan', this)">🍞 Sarapan</div>
-        <div class="cat-chip" onclick="filterCategory('promo', this)">🏷️ Promo</div>
     </nav>
 
-    <div class="filter-bar">
-        <h3 style="font-size: 1.2rem;">Rekomendasi Untukmu</h3>
-        <select class="filter-select" onchange="sortMenu(this.value)">
-            <option value="terlaris">Terlaris</option>
-            <option value="termurah">Termurah</option>
-            <option value="termahal">Termahal</option>
-        </select>
+    <div class="controls">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Mau makan apa hari ini?" onkeyup="filterMenu()">
+        </div>
+        <div class="categories" id="categoryContainer">
+            <div class="chip active" onclick="filterCategory('all', this)">Semua</div>
+            <div class="chip" onclick="filterCategory('makanan', this)">Makanan Berat</div>
+            <div class="chip" onclick="filterCategory('minuman', this)">Minuman</div>
+            <div class="chip" onclick="filterCategory('snack', this)">Snack</div>
+            <div class="chip" onclick="filterCategory('sarapan', this)">Sarapan</div>
+            <div class="chip" onclick="filterCategory('promo', this)">Promo</div>
+        </div>
     </div>
 
-    <div class="menu-grid" id="menuContainer">
-        <p style="grid-column: 1/-1; text-align: center; color: #888;">Sedang memuat menu...</p>
+    <div class="container">
+        <h3 class="section-title">Daftar Menu</h3>
+        <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memuat Menu...</div>
+        <div class="menu-grid" id="menuContainer">
+            </div>
     </div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <div class="overlay" id="overlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3>Keranjang Saya</h3>
+            <i class="fas fa-times" style="cursor:pointer;" onclick="toggleCart()"></i>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p style="text-align:center; color:#999; margin-top:20px;">Keranjang masih kosong</p>
+        </div>
+        <div class="cart-footer">
+            <div class="total-row">
+                <span>Total</span>
+                <span id="cartTotal">Rp 0</span>
+            </div>
+            <button class="btn-checkout" onclick="checkout()">Pesan Sekarang</button>
+        </div>
+    </div>
 
     <script>
-        // CONFIG
-        const BACKEND_URL = 'https://uas-menu-service.vercel.app'; 
+        // --- KONFIGURASI API ---
+        // ⚠️ GANTI LINK INI DENGAN LINK MENU-SERVICE VERCEL KAMU YANG BENAR ⚠️
+        const API_URL = "http://uas-menu-service.vercel.app"; 
 
-        // STATE
-        let mockMenu = []; 
-        let currentDataSet = [];
-        let cart = []; 
-        let tempSelectedId = null;
-        let tempQty = 1;
-        let editingItemIndex = -1;
+        let allMenus = [];
+        let cart = [];
+        let currentCategory = 'all';
 
-        // MAPS STATE
-        let map;
-        let marker;
-        const defaultLat = -5.397140; 
-        const defaultLng = 105.266789;
-
-        // 1. FETCH DATA (CONNECT TO BACKEND)
-        async function fetchMenuData() {
-            const container = document.getElementById('menuContainer');
+        // 1. Fetch Data saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch(`${BACKEND_URL}/menu`);
-                if(!response.ok) throw new Error("Gagal mengambil data");
-                
-                const data = await response.json();
-                mockMenu = data; 
-                currentDataSet = [...mockMenu];
-                renderMenu(currentDataSet);
-            } catch (error) {
-                console.error(error);
-                container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; margin-top: 2rem; color: var(--danger);">
-                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 2rem; margin-bottom:10px;"></i>
-                    <p>Gagal terhubung ke server backend.<br>Pastikan server menyala di port 3000.</p>
-                </div>`;
+                const res = await fetch(`${API_URL}/menu`);
+                if(!res.ok) throw new Error("Gagal fetch");
+                allMenus = await res.json();
+                renderMenu(allMenus);
+                document.getElementById('loading').style.display = 'none';
+            } catch (err) {
+                console.error(err);
+                document.getElementById('loading').innerHTML = "Gagal memuat data. Cek koneksi / URL Backend.";
             }
-        }
+        });
 
-        // 2. RENDER MENU
+        // 2. Render Kartu Menu (READ)
         function renderMenu(data) {
             const container = document.getElementById('menuContainer');
             container.innerHTML = '';
-            
+
             if (data.length === 0) {
-                container.innerHTML = `<p style="grid-column: 1/-1; text-align: center; margin-top: 2rem; color: #888;">Menu tidak ditemukan.</p>`;
+                container.innerHTML = '<p style="grid-column: 1/-1; text-align:center;">Tidak ada menu ditemukan.</p>';
                 return;
             }
-            
-            data.forEach(item => {
-                const isHabis = item.stock <= 0;
-                const statusOverlay = isHabis ? '<div class="out-of-stock-overlay">HABIS</div>' : '';
-                const promoBadge = item.isPromo ? `<div style="position:absolute; top:10px; left:10px; background:var(--danger); color:white; padding:4px 8px; border-radius:4px; font-size:0.7rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">PROMO</div>` : '';
-                const btnState = isHabis ? 'disabled' : `onclick="openNoteModal(${item.id})"`;
 
-                container.innerHTML += `
-                    <div class="food-card">
-                        <div class="card-image-wrapper">
-                            ${statusOverlay} ${promoBadge} 
-                            <img src="${item.image}" class="food-img" alt="${item.name}">
-                            <div class="rating-badge" style="position:absolute; top:10px; right:10px; background:white; padding:4px 8px; border-radius:15px; font-size:0.8rem; font-weight:bold; box-shadow:0 2px 5px rgba(0,0,0,0.2);">⭐ ${item.rating}</div>
-                        </div>
-                        <div class="food-info" style="padding: 15px; display: flex; flex-direction: column; flex-grow: 1;">
-                            <h3 style="font-size:1rem; margin-bottom:5px;">${item.name}</h3>
-                            <p style="font-size:0.8rem; color:#888; margin-bottom:10px;">${item.category.replace('_', ' ').toUpperCase()}</p>
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto;">
-                                <span class="price-tag" style="font-weight: bold; color: var(--primary);">Rp ${item.price.toLocaleString()}</span>
-                                <button class="btn-add" ${btnState}><i class="fa-solid fa-plus"></i></button>
+            data.forEach(item => {
+                const isHabis = item.status === 'habis';
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.harga);
+                
+                // Card HTML Component
+                const card = `
+                    <div class="card ${isHabis ? 'habis' : ''}">
+                        <img src="${item.gambar}" alt="${item.nama}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                        <div class="card-body">
+                            <h4 class="card-title">${item.nama}</h4>
+                            <p class="card-desc">${item.deskripsi || 'Enak dan lezat.'}</p>
+                            <div class="card-footer">
+                                <span class="price">${formattedPrice}</span>
+                                ${!isHabis ? `
+                                <button class="btn-add" onclick="addToCart('${item._id}')">
+                                    <i class="fas fa-plus"></i>
+                                </button>` : ''}
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                `;
+                container.innerHTML += card;
             });
         }
 
-        // 3. CART & MODAL LOGIC (FRONTEND)
-        function openNoteModal(id) {
-            editingItemIndex = -1;
-            document.getElementById('btnConfirmNote').innerText = "Tambah ke Keranjang";
-
-            const item = mockMenu.find(i => i.id === id);
-            if(!item) return;
-            tempSelectedId = id; tempQty = 1;
+        // 3. Logic Filter & Search
+        function filterMenu() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
             
-            document.getElementById('modalItemName').innerText = item.name;
-            document.getElementById('modalItemPrice').innerText = 'Rp ' + item.price.toLocaleString();
-            document.getElementById('modalItemNote').value = '';
-            document.getElementById('modalItemQty').innerText = tempQty;
-            document.getElementById('noteModal').style.display = 'flex';
+            const filtered = allMenus.filter(item => {
+                const matchName = item.nama.toLowerCase().includes(query);
+                const matchCat = currentCategory === 'all' || item.kategori === currentCategory;
+                return matchName && matchCat;
+            });
+
+            renderMenu(filtered);
         }
 
-        function editCartItem(index) {
-            editingItemIndex = index;
-            const itemInCart = cart[index];
-            const itemMaster = mockMenu.find(i => i.id === itemInCart.id);
-            tempSelectedId = itemInCart.id; tempQty = itemInCart.qty;
+        function filterCategory(cat, element) {
+            currentCategory = cat;
             
-            document.getElementById('modalItemName').innerText = itemMaster.name;
-            document.getElementById('modalItemPrice').innerText = 'Rp ' + itemMaster.price.toLocaleString();
-            document.getElementById('modalItemNote').value = itemInCart.note || '';
-            document.getElementById('modalItemQty').innerText = tempQty;
-            document.getElementById('btnConfirmNote').innerText = "Simpan Perubahan";
-            document.getElementById('noteModal').style.display = 'flex';
+            // UI Active Chip
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            element.classList.add('active');
+            
+            filterMenu();
         }
 
-        function closeNoteModal() { document.getElementById('noteModal').style.display = 'none'; }
-        function adjustModalQty(change) { tempQty += change; if(tempQty < 1) tempQty = 1; document.getElementById('modalItemQty').innerText = tempQty; }
-
-        function confirmAddToCart() {
-            const item = mockMenu.find(i => i.id === tempSelectedId);
-            const noteValue = document.getElementById('modalItemNote').value;
-
-            if (editingItemIndex > -1) {
-                cart[editingItemIndex].qty = tempQty;
-                cart[editingItemIndex].note = noteValue;
-                editingItemIndex = -1;
-            } else {
-                const existingItem = cart.find(i => i.id === tempSelectedId && i.note === noteValue);
-                if (existingItem) { existingItem.qty += tempQty; } 
-                else { cart.push({ ...item, qty: tempQty, note: noteValue }); }
-            }
-            closeNoteModal(); updateCartUI();
-            const sidebar = document.getElementById('cartSidebar'); 
-            if(!sidebar.classList.contains('active')) toggleCart();
-        }
-
+        // 4. Logic Keranjang (Cart Logic)
         function toggleCart() {
-            const sidebar = document.getElementById('cartSidebar');
-            const backdrop = document.querySelector('.cart-backdrop');
-            sidebar.classList.toggle('active'); backdrop.classList.toggle('active');
+            document.getElementById('cartSidebar').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function addToCart(id) {
+            const item = allMenus.find(m => m._id === id);
+            const existingItem = cart.find(c => c._id === id);
+
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cart.push({ ...item, qty: 1 });
+            }
+            updateCartUI();
+            
+            // Buka keranjang otomatis agar user sadar
+            if(!document.getElementById('cartSidebar').classList.contains('open')) {
+                toggleCart();
+            }
+        }
+
+        function updateCartQty(id, change) {
+            const index = cart.findIndex(c => c._id === id);
+            if (index !== -1) {
+                cart[index].qty += change;
+                if (cart[index].qty <= 0) cart.splice(index, 1);
+                updateCartUI();
+            }
         }
 
         function updateCartUI() {
-            const totalItems = cart.reduce((sum, item) => sum + item.qty, 0);
-            document.getElementById('cartCount').innerText = totalItems;
-            document.getElementById('cartCount').style.display = totalItems > 0 ? 'block' : 'none';
-
-            const cartList = document.getElementById('cartItemsList');
-            cartList.innerHTML = '';
-            let grandTotal = 0;
+            const container = document.getElementById('cartItems');
+            const badge = document.getElementById('cartBadge');
+            const totalEl = document.getElementById('cartTotal');
             
-            if(cart.length === 0) {
-                cartList.innerHTML = `<div style="text-align: center; margin-top: 50px; color: #888;"><i class="fa-solid fa-basket-shopping" style="font-size: 3rem; margin-bottom: 10px; opacity: 0.3;"></i><p>Keranjang masih kosong.</p></div>`;
-            } else {
-                cart.forEach((item, index) => {
-                    const totalPerItem = item.price * item.qty; grandTotal += totalPerItem;
-                    const noteHtml = item.note ? `<div style="font-size: 0.75rem; color: #666; font-style: italic; margin-top: 3px;">📝 "${item.note}"</div>` : '';
-                    
-                    cartList.innerHTML += `
-                        <div class="cart-item">
-                            <img src="${item.image}" alt="${item.name}">
-                            <div class="cart-item-details">
-                                <span class="cart-item-title">${item.name}</span>
-                                <span class="cart-item-price">Rp ${item.price.toLocaleString()}</span>
-                                ${noteHtml}
-                            </div>
-                            <div class="cart-item-controls">
-                                <button class="qty-btn" onclick="changeQty(${index}, -1)">-</button>
-                                <span style="font-size: 0.9rem;">${item.qty}</span>
-                                <button class="qty-btn" onclick="changeQty(${index}, 1)">+</button>
-                            </div>
-                            <div class="cart-action-group">
-                                <button class="cart-btn-icon cart-edit-btn" onclick="editCartItem(${index})"><i class="fa-solid fa-pen"></i></button>
-                                <button class="cart-btn-icon cart-delete-btn" onclick="removeItem(${index})"><i class="fa-solid fa-trash"></i></button>
-                            </div>
-                        </div>`;
-                });
+            let totalPrice = 0;
+            let totalCount = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999; margin-top:20px;">Keranjang kosong</p>';
+                badge.style.display = 'none';
+                totalEl.innerText = "Rp 0";
+                return;
             }
-            document.getElementById('cartTotalValue').innerText = 'Rp ' + grandTotal.toLocaleString();
-        }
 
-        function changeQty(index, change) { cart[index].qty += change; if (cart[index].qty <= 0) cart.splice(index, 1); updateCartUI(); }
-        function removeItem(index) { if(confirm('Hapus item?')) { cart.splice(index, 1); updateCartUI(); } }
-
-        // 4. CHECKOUT LOGIC
-        function openCheckoutModal() {
-            if(cart.length === 0) { alert("Keranjang masih kosong!"); return; }
-            toggleCart(); 
-            const summaryList = document.getElementById('checkoutItemsList');
-            summaryList.innerHTML = '';
-            let totalOrder = 0;
-            
+            container.innerHTML = '';
             cart.forEach(item => {
-                const subtotal = item.price * item.qty;
-                totalOrder += subtotal;
-                summaryList.innerHTML += `
-                <div class="co-item-row">
-                    <span class="co-item-name">${item.qty}x ${item.name} <br><small style="color:#666">${item.note||''}</small></span>
-                    <span class="co-item-price">Rp ${subtotal.toLocaleString()}</span>
-                </div>`;
+                totalPrice += item.harga * item.qty;
+                totalCount += item.qty;
+
+                const formattedPrice = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.harga * item.qty);
+
+                container.innerHTML += `
+                    <div class="cart-item">
+                        <div class="item-info">
+                            <h4>${item.nama}</h4>
+                            <p>${formattedPrice}</p>
+                        </div>
+                        <div class="item-controls">
+                            <button class="btn-qty" onclick="updateCartQty('${item._id}', -1)">-</button>
+                            <span style="font-size:0.9rem; font-weight:bold;">${item.qty}</span>
+                            <button class="btn-qty" onclick="updateCartQty('${item._id}', 1)">+</button>
+                        </div>
+                    </div>
+                `;
             });
 
-            document.getElementById('checkoutTotalValue').innerText = 'Rp ' + totalOrder.toLocaleString();
-            document.getElementById('checkoutModal').style.display = 'flex';
-
-            setTimeout(() => { if(!map) initMap(); else map.invalidateSize(); }, 300);
+            badge.style.display = 'block';
+            badge.innerText = totalCount;
+            totalEl.innerText = new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(totalPrice);
         }
 
-        function closeCheckoutModal() { document.getElementById('checkoutModal').style.display = 'none'; }
-        function editOrder() { closeCheckoutModal(); toggleCart(); }
-
-        // 5. MAPS LOGIC
-        function initMap() {
-            map = L.map('map').setView([defaultLat, defaultLng], 15);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-            marker = L.marker([defaultLat, defaultLng], {draggable: true}).addTo(map);
-            marker.on('dragend', function(e) { getAddressFromCoords(e.target.getLatLng().lat, e.target.getLatLng().lng); });
-            getAddressFromCoords(defaultLat, defaultLng);
+        function checkout() {
+            if (cart.length === 0) return alert("Keranjang kosong!");
+            alert("Terima kasih! Pesanan Anda sedang disiapkan dapur.");
+            cart = [];
+            updateCartUI();
+            toggleCart();
         }
-
-        function getMyLocation() {
-            const btn = document.querySelector('.btn-locate');
-            if (navigator.geolocation) {
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Loading...';
-                navigator.geolocation.getCurrentPosition(pos => {
-                    const {latitude, longitude} = pos.coords;
-                    map.setView([latitude, longitude], 17);
-                    marker.setLatLng([latitude, longitude]);
-                    getAddressFromCoords(latitude, longitude);
-                    btn.innerHTML = '<i class="fa-solid fa-crosshairs"></i> Lokasi Saya';
-                }, () => { alert("Gagal mendapatkan lokasi GPS."); btn.innerHTML = '<i class="fa-solid fa-crosshairs"></i> Lokasi Saya'; });
-            } else alert("Browser tidak support GPS.");
-        }
-
-        function focusOnMap() { document.getElementById('checkoutScrollArea').scrollTop = 0; if(map) map.invalidateSize(); }
-
-        function getAddressFromCoords(lat, lng) {
-            document.getElementById('latLngText').innerText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
-            document.getElementById('addressText').innerText = "Memuat alamat...";
-            
-            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
-                .then(res => res.json())
-                .then(data => {
-                    document.getElementById('addressText').innerText = data.display_name ? data.display_name.split(',').slice(0, 3).join(',') : "Alamat tidak ditemukan";
-                })
-                .catch(() => { document.getElementById('addressText').innerText = `Titik Koordinat (${lat.toFixed(4)}, ${lng.toFixed(4)})`; });
-        }
-
-        // 6. PROCESS ORDER (SEND TO BACKEND)
-        async function processFinalOrder() {
-            const btn = document.querySelector('.co-footer-btn');
-            const address = document.getElementById('addressText').innerText;
-            const originalContent = btn.innerHTML;
-
-            if(address.includes("Menunggu")) { alert("Tentukan lokasi dulu."); return; }
-
-            // Loading UI
-            btn.innerHTML = 'Memproses...'; btn.style.pointerEvents = 'none';
-
-            const payload = {
-                items: cart,
-                total: document.getElementById('checkoutTotalValue').innerText,
-                location: { address: address, coordinates: document.getElementById('latLngText').innerText },
-                payment: document.querySelector('.co-payment-select').value,
-                timestamp: new Date().toISOString()
-            };
-
-            try {
-                // KIRIM DATA KE BACKEND
-                const response = await fetch(`${BACKEND_URL}/checkout`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if(response.ok) {
-                    closeCheckoutModal();
-                    document.getElementById('successLocationText').innerText = address;
-                    document.getElementById('successModal').style.display = 'flex';
-                    cart = []; updateCartUI();
-                } else {
-                    alert("Gagal membuat pesanan.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                alert("Koneksi ke server bermasalah.");
-            } finally {
-                btn.innerHTML = originalContent; btn.style.pointerEvents = 'auto';
-            }
-        }
-
-        function closeSuccessModal() { document.getElementById('successModal').style.display = 'none'; }
-
-        // 7. FILTER & SORT
-        function filterCategory(cat, element) {
-            document.querySelectorAll('.cat-chip').forEach(el => el.classList.remove('active'));
-            element.classList.add('active');
-            if(cat === 'all') currentDataSet = [...mockMenu];
-            else if (cat === 'promo') currentDataSet = mockMenu.filter(item => item.isPromo);
-            else currentDataSet = mockMenu.filter(item => item.category === cat);
-            renderMenu(currentDataSet);
-        }
-
-        function sortMenu(type) {
-            let sorted = [...currentDataSet];
-            if(type === 'terlaris') sorted.sort((a,b) => b.rating - a.rating);
-            else if(type === 'termurah') sorted.sort((a,b) => a.price - b.price);
-            else if(type === 'termahal') sorted.sort((a,b) => b.price - a.price);
-            renderMenu(sorted);
-        }
-
-        document.querySelector('.search-input').addEventListener('input', (e) => {
-            const keyword = e.target.value.toLowerCase();
-            renderMenu(mockMenu.filter(item => item.name.toLowerCase().includes(keyword)));
-        });
-
-        // INIT
-        window.addEventListener('DOMContentLoaded', fetchMenuData);
-
     </script>
 </body>
 </html>
