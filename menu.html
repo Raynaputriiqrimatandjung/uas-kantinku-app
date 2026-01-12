@@ -3,69 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menu Kantinku</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Kantinku - Menu</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #ff7f50; --dark: #333; }
-        body { font-family: 'Poppins', sans-serif; margin: 0; background: #fdfdfd; }
-        .navbar { padding: 20px 5%; display: flex; justify-content: space-between; align-items: center; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .logo { color: var(--primary); font-weight: bold; font-size: 1.5rem; text-decoration: none; }
-        .container { padding: 40px 5%; }
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; margin-top: 30px; }
-        .card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; }
+        :root { --primary: #FF7F50; }
+        body { font-family: 'Poppins', sans-serif; background: #fafafa; margin: 0; color: #333; }
+        
+        .navbar { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .brand { font-weight: 800; font-size: 1.4rem; color: var(--primary); text-decoration: none; }
+        
+        .header { text-align: center; padding: 40px 20px; }
+        .filters { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .filter-btn { padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; background: white; cursor: pointer; transition: 0.3s; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; padding: 20px 5%; max-width: 1200px; margin: 0 auto; }
+        
+        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s; }
         .card:hover { transform: translateY(-5px); }
         .card-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
-        .card-content { padding: 20px; }
-        .card-title { margin: 0; font-size: 1.1rem; color: var(--dark); }
-        .card-price { color: var(--primary); font-weight: bold; font-size: 1.2rem; margin-top: 10px; display: block; }
-        #loading { text-align: center; font-weight: bold; color: #888; margin-top: 50px; }
+        .card-body { padding: 15px; }
+        .price { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
+        
+        .btn-add { background: var(--primary); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; float: right; cursor: pointer; }
     </style>
 </head>
 <body>
-    <nav class="navbar">
-        <a href="#" class="logo">🍴 Kantinku</a>
-        <a href="admin.html" style="text-decoration:none; color:var(--dark); font-size:0.9rem;">Admin Mode</a>
-    </nav>
 
-    <div class="container">
-        <h3>Rekomendasi Untukmu</h3>
-        <div id="loading">Memuat data dari server...</div>
-        <div class="menu-grid" id="menuContainer"></div>
+    <nav class="navbar">
+        <a href="#" class="brand"><i class="fas fa-utensils"></i> Kantinku</a>
+        </nav>
+
+    <header class="header">
+        <h1>Mau makan apa?</h1>
+        <div class="filters">
+            <button class="filter-btn active" onclick="filterMenu('all', this)">Semua</button>
+            <button class="filter-btn" onclick="filterMenu('Makanan Berat', this)">Makanan</button>
+            <button class="filter-btn" onclick="filterMenu('Minuman', this)">Minuman</button>
+            <button class="filter-btn" onclick="filterMenu('Snack', this)">Snack</button>
+        </div>
+    </header>
+
+    <div id="menuContainer" class="menu-grid">
+        <p style="text-align:center; width:100%;">Sedang memuat menu...</p>
     </div>
 
     <script>
-        const API_URL = "https://uas-menu-service.vercel.app"; // Perbaikan HTTPS
+        const API_URL = "https://uas-menu-service.vercel.app"; 
+        let allMenus = [];
 
         async function fetchMenus() {
             try {
                 const res = await fetch(`${API_URL}/menu`);
-                if (!res.ok) throw new Error();
-                const data = await res.json();
-                renderMenu(data);
-                document.getElementById('loading').style.display = 'none';
+                allMenus = await res.json();
+                renderMenus(allMenus);
             } catch (err) {
-                document.getElementById('loading').innerHTML = "Gagal memuat data dari server.";
+                document.getElementById('menuContainer').innerHTML = 
+                    `<p style="text-align:center; color:red;">Gagal memuat menu. Cek koneksi.</p>`;
             }
         }
 
-        function renderMenu(data) {
+        function renderMenus(data) {
             const container = document.getElementById('menuContainer');
             container.innerHTML = '';
             
+            if(data.length === 0) {
+                container.innerHTML = '<p>Menu belum tersedia.</p>'; return;
+            }
+
             data.forEach(item => {
-                // Logika Anti-Crash: Berikan gambar placeholder jika link kosong
-                const imageSrc = item.gambar || "https://via.placeholder.com/300x200?text=Gambar+Tidak+Ada";
-                
+                // Gunakan gambar default jika kosong (dari Backend sudah dihandle, tapi double check di sini aman)
+                const img = item.gambar || 'https://placehold.co/400x300?text=Kantinku';
+
                 container.innerHTML += `
-                    <div class="card">
-                        <img src="${imageSrc}" class="card-img" onerror="this.src='https://via.placeholder.com/300x200?text=Error+Loading'">
-                        <div class="card-content">
-                            <h4 class="card-title">${item.nama}</h4>
-                            <span class="card-price">Rp ${item.harga.toLocaleString('id-ID')}</span>
+                <div class="card">
+                    <img src="${img}" class="card-img" onerror="this.src='https://placehold.co/400x300?text=Rusak'">
+                    <div class="card-body">
+                        <h3 style="margin:0 0 5px 0; font-size:1.1rem;">${item.nama}</h3>
+                        <p style="font-size:0.8rem; color:#888; margin-bottom:15px;">${item.deskripsi || ''}</p>
+                        <div>
+                            <span class="price">Rp ${item.harga.toLocaleString()}</span>
+                            <button class="btn-add" onclick="alert('Masuk keranjang!')"><i class="fas fa-plus"></i></button>
                         </div>
-                    </div>`;
+                    </div>
+                </div>`;
             });
+        }
+
+        function filterMenu(cat, btn) {
+            // Update UI Button
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // Logic Filter
+            if(cat === 'all') {
+                renderMenus(allMenus);
+            } else {
+                const filtered = allMenus.filter(m => m.kategori === cat);
+                renderMenus(filtered);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', fetchMenus);

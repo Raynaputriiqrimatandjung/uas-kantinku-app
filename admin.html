@@ -3,132 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Kantinku</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Admin Dapur - Kantinku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --primary: #ff7f50; --bg: #f4f6f8; }
-        body { font-family: 'Poppins', sans-serif; background: var(--bg); margin: 0; padding: 20px; }
-        .admin-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .btn-create { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; }
-        .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px 20px; text-align: left; border-bottom: 1px solid #eee; }
-        th { background: #f9f9f9; font-weight: 600; color: #555; }
-        .status-badge { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; }
-        .status-available { background: #d4edda; color: #155724; }
-        .status-habis { background: #f8d7da; color: #721c24; }
-        .actions button { margin-right: 5px; padding: 6px 10px; border: none; border-radius: 5px; cursor: pointer; color: white; }
-        .btn-edit { background: #f39c12; }
-        .btn-delete { background: #e74c3c; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
-        .modal.active { display: flex; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 100%; max-width: 450px; position: relative; }
-        .form-group { margin-bottom: 15px; }
-        .form-control { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-        .btn-save { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .close-modal { position: absolute; top: 15px; right: 20px; cursor: pointer; font-size: 1.2rem; color: #999; }
+        body { font-family: 'Poppins', sans-serif; background: #f4f6f8; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        
+        /* Login Gate */
+        #loginGate { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; display: flex; justify-content: center; align-items: center; z-index: 1000; }
+        .login-box { text-align: center; padding: 30px; border: 1px solid #ddd; border-radius: 10px; }
+        
+        /* Dashboard */
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        input, select, textarea { width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        button { cursor: pointer; padding: 10px 20px; border-radius: 5px; border: none; color: white; font-weight: bold; }
+        .btn-primary { background: #ff7f50; }
+        .btn-danger { background: #ff4757; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        .thumb { width: 50px; height: 50px; object-fit: cover; border-radius: 5px; background: #eee; }
     </style>
 </head>
 <body>
-    <div class="admin-header">
-        <h2>🍽️ Dapur & Menu Manager</h2>
-        <div style="display:flex; gap:10px;">
-            <a href="menu.html" style="text-decoration:none; color:#555; background:white; padding:8px 15px; border-radius:8px; border:1px solid #ddd;">Lihat Web</a>
-            <button class="btn-create" onclick="openModal()"><i class="fas fa-plus"></i> Tambah Menu</button>
+
+    <div id="loginGate">
+        <div class="login-box">
+            <h2>🔒 Admin Area</h2>
+            <p>Masukkan PIN Dapur</p>
+            <input type="password" id="pinInput" placeholder="PIN: 1234" style="text-align:center;">
+            <button class="btn-primary" onclick="checkPin()">Masuk</button>
+            <br><br>
+            <a href="menu.html" style="color:#888; text-decoration:none;">Kembali ke Menu</a>
         </div>
     </div>
-    <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Gambar</th>
-                    <th>Nama Menu</th>
-                    <th>Harga</th>
-                    <th>Status</th>
-                    <th>Aksi</th>
-                </tr>
-            </thead>
-            <tbody id="menuTableBody"></tbody>
-        </table>
-    </div>
 
-    <div class="modal" id="modalForm">
-        <div class="modal-content">
-            <span class="close-modal" onclick="closeModal()">&times;</span>
-            <h3 id="modalTitle">Tambah Menu Baru</h3>
-            <form id="menuForm" onsubmit="handleSave(event)">
-                <input type="hidden" id="menuId">
-                <div class="form-group"><label>Nama Makanan</label><input type="text" id="nama" class="form-control" required></div>
-                <div class="form-group"><label>Harga (Rp)</label><input type="number" id="harga" class="form-control" required></div>
-                <div class="form-group"><label>URL Gambar</label><input type="text" id="gambar" class="form-control" required></div>
-                <div class="form-group">
-                    <label>Kategori</label>
-                    <select id="kategori" class="form-control">
-                        <option value="makanan">Makanan</option>
-                        <option value="minuman">Minuman</option>
-                    </select>
+    <div id="dashboard" class="container" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h2>👨‍🍳 Manajemen Menu</h2>
+            <button onclick="logout()" style="background:#ddd; color:#333;">Logout</button>
+        </div>
+
+        <div class="card">
+            <h3>Tambah Menu Baru</h3>
+            <form onsubmit="addMenu(event)">
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="text" id="nama" placeholder="Nama Menu (Wajib)" required>
+                    <input type="number" id="harga" placeholder="Harga (Wajib)" required>
                 </div>
-                <button type="submit" class="btn-save" id="btnSave">Simpan Data</button>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <select id="kategori">
+                        <option value="Makanan Berat">Makanan Berat</option>
+                        <option value="Minuman">Minuman</option>
+                        <option value="Snack">Snack</option>
+                    </select>
+                    <input type="text" id="gambar" placeholder="Link Gambar (Opsional)">
+                </div>
+                <textarea id="deskripsi" placeholder="Deskripsi menu..." rows="2"></textarea>
+                <button type="submit" class="btn-primary" style="width:100%; margin-top:10px;">Simpan Menu</button>
             </form>
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Gbr</th>
+                        <th>Menu</th>
+                        <th>Harga</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="menuTable">
+                    <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        const API_URL = "https://uas-menu-service.vercel.app"; // Perbaikan HTTPS
-        let allMenus = [];
+        // GANTI DENGAN URL MENU-SERVICE VERCEL ANDA
+        const API_URL = "https://uas-menu-service.vercel.app"; 
 
-        document.addEventListener('DOMContentLoaded', fetchMenus);
+        // 1. AUTH LOGIC
+        function checkPin() {
+            if(document.getElementById('pinInput').value === "1234") {
+                sessionStorage.setItem('admin', 'true');
+                showDashboard();
+            } else { alert("PIN Salah!"); }
+        }
 
+        function showDashboard() {
+            document.getElementById('loginGate').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+            fetchMenus();
+        }
+
+        function logout() { sessionStorage.removeItem('admin'); location.reload(); }
+        if(sessionStorage.getItem('admin')) showDashboard();
+
+        // 2. CRUD LOGIC
         async function fetchMenus() {
             try {
                 const res = await fetch(`${API_URL}/menu`);
-                allMenus = await res.json();
-                renderTable(allMenus);
-            } catch (err) { alert("Gagal memuat data server."); }
+                const data = await res.json();
+                const tbody = document.getElementById('menuTable');
+                tbody.innerHTML = '';
+                
+                data.forEach(item => {
+                    // Fallback gambar agar tabel rapi
+                    const img = item.gambar || 'https://placehold.co/50?text=Food';
+                    
+                    tbody.innerHTML += `
+                        <tr>
+                            <td><img src="${img}" class="thumb"></td>
+                            <td>
+                                <strong>${item.nama}</strong><br>
+                                <small style="color:#888;">${item.kategori}</small>
+                            </td>
+                            <td>Rp ${item.harga.toLocaleString()}</td>
+                            <td>
+                                <button class="btn-danger" onclick="deleteMenu('${item._id}')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>`;
+                });
+            } catch (err) { alert("Gagal ambil data"); }
         }
 
-        function renderTable(data) {
-            const tbody = document.getElementById('menuTableBody');
-            tbody.innerHTML = '';
-            data.forEach(item => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td><img src="${item.gambar || ''}" width="50" onerror="this.src='https://via.placeholder.com/50'"></td>
-                        <td>${item.nama}</td>
-                        <td>Rp ${item.harga.toLocaleString()}</td>
-                        <td><span class="status-badge status-available">Tersedia</span></td>
-                        <td class="actions">
-                            <button class="btn-delete" onclick="deleteMenu('${item._id}')"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>`;
-            });
-        }
-
-        function openModal() { document.getElementById('modalForm').classList.add('active'); document.getElementById('menuForm').reset(); }
-        function closeModal() { document.getElementById('modalForm').classList.remove('active'); }
-
-        async function handleSave(e) {
+        async function addMenu(e) {
             e.preventDefault();
             const payload = {
                 nama: document.getElementById('nama').value,
-                harga: Number(document.getElementById('harga').value),
+                harga: document.getElementById('harga').value,
+                kategori: document.getElementById('kategori').value,
                 gambar: document.getElementById('gambar').value,
-                kategori: document.getElementById('kategori').value
+                deskripsi: document.getElementById('deskripsi').value
             };
-            try {
-                const res = await fetch(`${API_URL}/menu`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if(res.ok) { closeModal(); fetchMenus(); }
-            } catch (err) { alert("Gagal menyimpan."); }
+
+            await fetch(`${API_URL}/menu`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            
+            e.target.reset();
+            fetchMenus();
+            alert("Menu berhasil disimpan!");
         }
 
         async function deleteMenu(id) {
             if(confirm("Hapus menu ini?")) {
-                await fetch(`${API_URL}/menu/${id}`, { method: 'DELETE' });
+                await fetch(`${API_URL}/menu/${id}`, { method:'DELETE' });
                 fetchMenus();
             }
         }
