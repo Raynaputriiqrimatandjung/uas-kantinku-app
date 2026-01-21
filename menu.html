@@ -1,66 +1,45 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantinku - Menu</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Menu Kantinku</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        :root { --primary: #FF7F50; }
-        body { font-family: 'Poppins', sans-serif; background: #fafafa; margin: 0; color: #333; }
-        
-        .navbar { background: white; padding: 15px 5%; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .brand { font-weight: 800; font-size: 1.4rem; color: var(--primary); text-decoration: none; }
-        
-        .header { text-align: center; padding: 40px 20px; }
-        .filters { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
-        .filter-btn { padding: 8px 20px; border-radius: 20px; border: 1px solid #ddd; background: white; cursor: pointer; transition: 0.3s; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 25px; padding: 20px 5%; max-width: 1200px; margin: 0 auto; }
-        
-        .card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.05); transition: transform 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .card-img { width: 100%; height: 180px; object-fit: cover; background: #eee; }
-        .card-body { padding: 15px; }
-        .price { font-weight: bold; color: var(--primary); font-size: 1.1rem; }
-        
-        .btn-add { background: var(--primary); color: white; border: none; width: 35px; height: 35px; border-radius: 50%; float: right; cursor: pointer; }
-    </style>
 </head>
 <body>
-
     <nav class="navbar">
-        <a href="#" class="brand"><i class="fas fa-utensils"></i> Kantinku</a>
-        </nav>
-
-    <header class="header">
-        <h1>Mau makan apa?</h1>
-        <div class="filters">
-            <button class="filter-btn active" onclick="filterMenu('all', this)">Semua</button>
-            <button class="filter-btn" onclick="filterMenu('Makanan Berat', this)">Makanan</button>
-            <button class="filter-btn" onclick="filterMenu('Minuman', this)">Minuman</button>
-            <button class="filter-btn" onclick="filterMenu('Snack', this)">Snack</button>
+        <a href="#" class="brand">🍽️ Kantinku</a>
+        <div>
+            <a href="cart.html" class="btn btn-outline">
+                <i class="fas fa-shopping-cart"></i> <span id="cartCount">0</span>
+            </a>
+            <a href="index.html" class="btn" style="margin-left:10px;">Logout</a>
         </div>
-    </header>
+    </nav>
 
-    <div id="menuContainer" class="menu-grid">
-        <p style="text-align:center; width:100%;">Sedang memuat menu...</p>
+    <div class="container">
+        <header style="text-align:center; padding: 3rem 1rem;">
+            <h1>Mau makan enak apa hari ini?</h1>
+            <p style="color:#666;">Pesan makanan favoritmu dengan mudah dan cepat.</p>
+        </header>
+
+        <div id="loading" class="spinner"></div>
+        <div id="menuContainer" class="menu-grid"></div>
     </div>
 
+    <script src="utils.js"></script>
     <script>
-        const API_URL = "https://uas-menu-service.vercel.app"; 
-        let allMenus = [];
+        let cart = JSON.parse(localStorage.getItem('kantinku_cart')) || [];
+        updateCartBadge();
 
         async function fetchMenus() {
             try {
-                const res = await fetch(`${API_URL}/menu`);
-                allMenus = await res.json();
-                renderMenus(allMenus);
+                const res = await fetch(API_MENU);
+                const data = await res.json();
+                document.getElementById('loading').style.display = 'none';
+                renderMenus(data);
             } catch (err) {
-                document.getElementById('menuContainer').innerHTML = 
-                    `<p style="text-align:center; color:red;">Gagal memuat menu. Cek koneksi.</p>`;
+                showToast("Gagal memuat menu server", "error");
             }
         }
 
@@ -68,44 +47,46 @@
             const container = document.getElementById('menuContainer');
             container.innerHTML = '';
             
-            if(data.length === 0) {
-                container.innerHTML = '<p>Menu belum tersedia.</p>'; return;
-            }
-
             data.forEach(item => {
-                // Gunakan gambar default jika kosong (dari Backend sudah dihandle, tapi double check di sini aman)
-                const img = item.gambar || 'https://placehold.co/400x300?text=Kantinku';
-
                 container.innerHTML += `
-                <div class="card">
-                    <img src="${img}" class="card-img" onerror="this.src='https://placehold.co/400x300?text=Rusak'">
-                    <div class="card-body">
-                        <h3 style="margin:0 0 5px 0; font-size:1.1rem;">${item.nama}</h3>
-                        <p style="font-size:0.8rem; color:#888; margin-bottom:15px;">${item.deskripsi || ''}</p>
-                        <div>
-                            <span class="price">Rp ${item.harga.toLocaleString()}</span>
-                            <button class="btn-add" onclick="alert('Masuk keranjang!')"><i class="fas fa-plus"></i></button>
+                    <div class="card">
+                        <img src="${item.gambar || 'https://placehold.co/400'}" class="card-img" alt="${item.nama}">
+                        <div class="card-body">
+                            <h3 class="card-title">${item.nama}</h3>
+                            <p class="card-desc">${item.deskripsi || 'Menu lezat menanti Anda.'}</p>
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="card-price">${formatRupiah(item.harga)}</span>
+                                <button onclick="addToCart('${item._id}', '${item.nama}', ${item.harga}, '${item.gambar}')" class="btn btn-primary">
+                                    <i class="fas fa-plus"></i> Pesan
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>`;
+                `;
             });
         }
 
-        function filterMenu(cat, btn) {
-            // Update UI Button
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-
-            // Logic Filter
-            if(cat === 'all') {
-                renderMenus(allMenus);
+        // Logic Cart (Create/Update Quantity di LocalStorage)
+        function addToCart(id, nama, harga, gambar) {
+            const existingItem = cart.find(item => item.id === id);
+            
+            if (existingItem) {
+                existingItem.qty += 1;
             } else {
-                const filtered = allMenus.filter(m => m.kategori === cat);
-                renderMenus(filtered);
+                cart.push({ id, nama, harga, gambar, qty: 1 });
             }
+
+            localStorage.setItem('kantinku_cart', JSON.stringify(cart));
+            updateCartBadge();
+            showToast(`<b>${nama}</b> masuk keranjang!`);
         }
 
-        document.addEventListener('DOMContentLoaded', fetchMenus);
+        function updateCartBadge() {
+            const totalQty = cart.reduce((sum, item) => sum + item.qty, 0);
+            document.getElementById('cartCount').innerText = totalQty;
+        }
+
+        fetchMenus();
     </script>
 </body>
 </html>

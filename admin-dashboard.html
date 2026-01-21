@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Kantinku</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#" class="brand">Admin Panel</a>
+        <button onclick="logout()" class="btn btn-outline">Logout</button>
+    </nav>
+
+    <div class="container" style="padding: 2rem 5%;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 2rem;">
+            <h2>Manajemen Menu</h2>
+            <button onclick="openModal('add')" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Menu</button>
+        </div>
+
+        <div style="background: white; border-radius: 12px; box-shadow: var(--shadow); overflow:hidden;">
+            <table style="width:100%; border-collapse: collapse; text-align: left;">
+                <thead style="background: #f1f2f6; border-bottom: 2px solid #ddd;">
+                    <tr>
+                        <th style="padding:15px;">Gambar</th>
+                        <th>Nama</th>
+                        <th>Harga</th>
+                        <th>Kategori</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="adminMenuTable">
+                    </tbody>
+            </table>
+            <div id="loading" class="spinner"></div>
+        </div>
+    </div>
+
+    <div id="menuModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; justify-content:center; align-items:center;">
+        <div style="background:white; padding:2rem; border-radius:12px; width:400px; position:relative; animation: slideIn 0.3s;">
+            <h3 id="modalTitle">Tambah Menu</h3>
+            <form id="menuForm">
+                <input type="hidden" id="menuId">
+                <input type="text" id="nama" placeholder="Nama Menu" required>
+                <input type="number" id="harga" placeholder="Harga (Rp)" required min="1000">
+                <select id="kategori">
+                    <option value="Makanan">Makanan Berat</option>
+                    <option value="Minuman">Minuman</option>
+                    <option value="Snack">Cemilan</option>
+                </select>
+                <input type="text" id="gambar" placeholder="URL Gambar">
+                <textarea id="deskripsi" placeholder="Deskripsi singkat..." rows="3"></textarea>
+                
+                <div style="display:flex; gap:10px; margin-top:1rem;">
+                    <button type="button" onclick="closeModal()" class="btn" style="background:#eee;">Batal</button>
+                    <button type="submit" class="btn btn-primary" style="flex:1;">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script>
+        // Cek Auth Sederhana (Session Storage)
+        if (!sessionStorage.getItem('isAdmin')) {
+            window.location.href = 'admin-login.html'; // Redirect jika belum login
+        }
+
+        async function fetchMenus() {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const res = await fetch(API_MENU);
+                const data = await res.json();
+                renderTable(data);
+            } catch (err) {
+                showToast("Gagal mengambil data", "error");
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('adminMenuTable');
+            tbody.innerHTML = '';
+            data.forEach(item => {
+                tbody.innerHTML += `
+                    <tr style="border-bottom:1px solid #eee;">
+                        <td style="padding:10px;"><img src="${item.gambar || 'https://placehold.co/50'}" style="width:50px; height:50px; border-radius:8px; object-fit:cover;"></td>
+                        <td><b>${item.nama}</b></td>
+                        <td>${formatRupiah(item.harga)}</td>
+                        <td><span style="background:#dfe6e9; padding:4px 8px; border-radius:4px; font-size:0.8rem;">${item.kategori}</span></td>
+                        <td>
+                            <button onclick="editMenu('${item._id}', '${item.nama}', ${item.harga}, '${item.kategori}', '${item.deskripsi}', '${item.gambar}')" class="btn" style="color:#0984e3;"><i class="fas fa-edit"></i></button>
+                            <button onclick="deleteMenu('${item._id}')" class="btn" style="color:#d63031;"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        // --- CRUD LOGIC ---
+        
+        // 1. CREATE & UPDATE Handler
+        document.getElementById('menuForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('menuId').value;
+            const payload = {
+                nama: document.getElementById('nama').value,
+                harga: document.getElementById('harga').value,
+                kategori: document.getElementById('kategori').value,
+                gambar: document.getElementById('gambar').value,
+                deskripsi: document.getElementById('deskripsi').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `${API_MENU}/${id}` : API_MENU;
+
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if(res.ok) {
+                    showToast(id ? "Menu berhasil diupdate!" : "Menu berhasil ditambah!");
+                    closeModal();
+                    fetchMenus();
+                } else {
+                    throw new Error("Gagal menyimpan");
+                }
+            } catch (err) {
+                showToast(err.message, "error");
+            }
+        });
+
+        // 2. DELETE Handler
+        async function deleteMenu(id) {
+            if(confirm('Yakin hapus menu ini?')) {
+                try {
+                    await fetch(`${API_MENU}/${id}`, { method: 'DELETE' });
+                    showToast("Menu dihapus");
+                    fetchMenus();
+                } catch(err) { showToast("Gagal hapus", "error"); }
+            }
+        }
+
+        // --- MODAL UTILS ---
+        function openModal(mode) {
+            document.getElementById('menuModal').style.display = 'flex';
+            if(mode === 'add') {
+                document.getElementById('menuForm').reset();
+                document.getElementById('menuId').value = '';
+                document.getElementById('modalTitle').innerText = "Tambah Menu Baru";
+            }
+        }
+
+        function editMenu(id, nama, harga, kategori, deskripsi, gambar) {
+            openModal('edit');
+            document.getElementById('modalTitle').innerText = "Edit Menu";
+            document.getElementById('menuId').value = id;
+            document.getElementById('nama').value = nama;
+            document.getElementById('harga').value = harga;
+            document.getElementById('kategori').value = kategori;
+            document.getElementById('deskripsi').value = deskripsi;
+            document.getElementById('gambar').value = gambar;
+        }
+
+        function closeModal() {
+            document.getElementById('menuModal').style.display = 'none';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('isAdmin');
+            window.location.href = 'admin-login.html';
+        }
+
+        fetchMenus();
+    </script>
+</body>
+</html>
